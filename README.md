@@ -6,7 +6,7 @@ above the app, so they show over sheets, covers and navigation without any scree
 ## Install
 
 ```swift
-.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.0.0")
+.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.1.2")
 ```
 
 ## Products
