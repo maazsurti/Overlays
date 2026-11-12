@@ -1,0 +1,24 @@
+{
+  "originHash" : "6c3c684d1e5b1a2eb237bfcc1a10e42becdf0c2b183f9d86f7f77c17f5cd7344",
+  "pins" : [
+    {
+      "identity" : "networking",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/maazsurti/Networking.git",
+      "state" : {
+        "revision" : "3c2c39bc88acca8936b64e3f70554a4e86d8cfb3",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "simplerouter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/maazsurti/SimpleRouter.git",
+      "state" : {
+        "revision" : "4c1fb6fd8a66ca4ed9996f6cc3d05da82bb21c30",
+        "version" : "1.1.0"
+      }
+    }
+  ],
+  "version" : 3
+}

@@ -9,6 +9,23 @@ above the app, so they show over sheets, covers and navigation without any scree
 .package(url: "https://github.com/maazsurti/Overlays.git", from: "1.0.0")
 ```
 
+## Products
+
+- **`Overlays`** — UIKit. Everything below.
+- **`OverlaysSwiftUI`** — the same toasts, alerts and loading card for SwiftUI apps built on
+  `SimpleRouterSwiftUI`. Set `OverlayTheme.current` (SwiftUI `Color`/`Font`/`Image`, plus `locale`
+  and `layoutDirection` closures for RTL) and attach the hosts on your root view:
+
+  ```swift
+  @State private var overlays = OverlayCenter.shared
+
+  RootContent()
+      .overlayAdapter($overlays.toastStore, adapter: ToastAdapter())
+      .overlayAdapter($overlays.overlay, adapter: CustomOverlayAdapter())
+  ```
+
+  Titles are `LocalizedStringKey`s, so they translate through your app's own string catalog.
+
 ## Set up
 
 Attach once, after your main window exists, and give it your app's look:
