@@ -3,10 +3,10 @@ import Observation
 
 @MainActor
 @Observable
-final class ToastStore {
+public final class ToastStore {
     private(set) var toasts: [Toast] = []
     var maxVisible: Int
-    var bottomChromeInset: CGFloat = 0
+    public var bottomChromeInset: CGFloat = 0
 
     private var dismissTasks: [UUID: Task<Void, Never>] = [:]
 

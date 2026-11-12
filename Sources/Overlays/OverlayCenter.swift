@@ -20,7 +20,7 @@ import UIKit
 public final class OverlayCenter {
     public static let shared = OverlayCenter()
 
-    var toastStore = ToastStore()
+    public var toastStore = ToastStore()
 
     /// The overlay currently occupying the shared slot, or `nil` when there is
     /// none. Single slot: showing a second overlay replaces the first.
