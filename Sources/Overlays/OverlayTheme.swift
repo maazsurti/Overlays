@@ -48,7 +48,7 @@ public struct OverlayTheme {
         successIcon: UIImage? = UIImage(systemName: "checkmark.circle.fill"),
         errorIcon: UIImage? = UIImage(systemName: "xmark.circle.fill"),
         warningIcon: UIImage? = UIImage(systemName: "exclamationmark.circle.fill"),
-        infoIcon: UIImage? = OverlayTheme.current.infoIcon,
+        infoIcon: UIImage? = UIImage(systemName: "info.circle.fill"),
         loadingGlyph: UIImage? = nil,
         okTitle: String = "OK",
         cancelTitle: String = "Cancel",
