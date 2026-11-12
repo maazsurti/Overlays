@@ -18,6 +18,13 @@ public struct ModalAlert: Identifiable {
     public var message: String?
     public var buttons: [ModalAlertButton]
 
+    public init(icon: Icon? = nil, title: String, message: String? = nil, buttons: [ModalAlertButton]) {
+        self.icon = icon
+        self.title = title
+        self.message = message
+        self.buttons = buttons
+    }
+
     /// Preset glyphs with their semantic tint, plus an escape hatch for a custom
     /// symbol. Tints use design tokens so alerts stay on-brand.
     public enum Icon: Equatable {
