@@ -546,8 +546,12 @@ final class ToastStackView: UIView {
         displayLink = link
     }
 
+    /// Reports the capsules' frames while they move, then stops itself as soon
+    /// as nothing is in flight. A drag or an animator is the only reason a
+    /// capsule's drawn frame changes, so the link never outlives them.
     @objc private func reportFrames() {
         onFramesInvalidated?()
+        stopFrameReportingIfIdle()
     }
 
     private func stopFrameReportingIfIdle() {

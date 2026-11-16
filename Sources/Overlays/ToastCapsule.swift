@@ -63,6 +63,10 @@ final class ToastCapsule: UIView {
             bottom: Self.verticalMargin,
             trailing: Self.trailingMargin
         )
+        // A drag carries the pill over the safe-area insets, which would add
+        // them to its margins and squeeze the message to fewer lines. The pill
+        // keeps its own margins, so its message keeps the height it was fitted to.
+        insetsLayoutMarginsFromSafeArea = false
 
         let glyph = ToastGlyphView(style: toast.style)
         let content = UIStackView.horizontal(
