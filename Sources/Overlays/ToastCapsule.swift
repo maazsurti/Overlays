@@ -70,6 +70,7 @@ final class ToastCapsule: UIView {
             alignment: .center,
             views: [glyph, messageLabel]
         )
+        content.isUserInteractionEnabled = false
 
         addSubviews(content)
         NSLayoutConstraint.activate([

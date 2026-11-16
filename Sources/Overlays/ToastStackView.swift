@@ -97,7 +97,10 @@ final class ToastStackView: UIView {
 
     private static let horizontalPadding: CGFloat = 16
     private static let verticalPadding: CGFloat = 18
-    private static let spacing: CGFloat = 8
+    /// How far each capsule behind the front one peeks out from under it.
+    private static let depthPeek: CGFloat = 14
+    /// How much smaller each capsule behind the front one is.
+    private static let depthScaleStep: CGFloat = 0.04
     /// How much of the finger's travel the rest of the stack shares.
     private static let followRatio: CGFloat = 0.45
 
@@ -107,6 +110,7 @@ final class ToastStackView: UIView {
     private var departing: [ToastCapsule] = []
 
     private var targetCenters: [ObjectIdentifier: CGPoint] = [:]
+    private var targetScales: [ObjectIdentifier: CGFloat] = [:]
     private var animator: UIViewPropertyAnimator?
     private var generation = 0
     private var displayLink: CADisplayLink?
@@ -146,12 +150,22 @@ final class ToastStackView: UIView {
         needsTargetCenters = false
         computeTargetCenters()
         for capsule in live {
-            if let center = targetCenters[ObjectIdentifier(capsule)] {
+            let key = ObjectIdentifier(capsule)
+            if let center = targetCenters[key] {
                 capsule.center = center
             }
+            capsule.transform = CGAffineTransform(scaleX: targetScales[key] ?? 1, y: targetScales[key] ?? 1)
             capsule.alpha = 1
         }
         onFramesInvalidated?()
+    }
+
+    /// Only the capsules take touches. The stacks fill the whole window, so
+    /// without this the stack behind the top one would swallow its drags.
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        live.contains { capsule in
+            (capsule.layer.presentation()?.frame ?? capsule.frame).contains(point)
+        }
     }
 
     /// Reconciles the visible capsules with `items`. Capsules enter at the
@@ -203,6 +217,8 @@ final class ToastStackView: UIView {
 
         for capsule in entering {
             guard let target = targetCenters[ObjectIdentifier(capsule)] else { continue }
+            let scale = targetScales[ObjectIdentifier(capsule)] ?? 1
+            capsule.transform = CGAffineTransform(scaleX: scale, y: scale)
             if reduceMotion {
                 capsule.center = target
             } else {
@@ -216,6 +232,7 @@ final class ToastStackView: UIView {
             applyDrag()
         }
 
+        updateDepthOrder()
         animateReflow(reduceMotion: reduceMotion)
     }
 
@@ -235,32 +252,44 @@ final class ToastStackView: UIView {
     private func computeTargetCenters() {
         guard bounds.width > 0 else {
             targetCenters = [:]
+            targetScales = [:]
             return
         }
 
         let maxWidth = bounds.width - 2 * Self.horizontalPadding
-        var y: CGFloat
+        var edgeY: CGFloat
         switch placement {
         case .top:
-            y = safeAreaInsets.top + Self.verticalPadding
+            edgeY = safeAreaInsets.top + Self.verticalPadding
         case .bottom:
-            y = bounds.height - safeAreaInsets.bottom - Self.verticalPadding - bottomInset
+            edgeY = bounds.height - safeAreaInsets.bottom - Self.verticalPadding - bottomInset
         }
 
         var centers: [ObjectIdentifier: CGPoint] = [:]
-        for capsule in live {
+        var scales: [ObjectIdentifier: CGFloat] = [:]
+        for (index, capsule) in live.enumerated() {
             let size = capsule.fittingSize(maxWidth: maxWidth)
             capsule.bounds = CGRect(origin: .zero, size: size)
+
+            // Each capsule behind the front one is a little smaller and tucked
+            // under its neighbour, so the stack reads as depth, not as a list.
+            let depth = CGFloat(index)
+            let scale = max(0.86, 1 - Self.depthScaleStep * depth)
+            let visualHeight = size.height * scale
+            let centerY: CGFloat
             switch placement {
             case .top:
-                centers[ObjectIdentifier(capsule)] = CGPoint(x: bounds.midX, y: y + size.height / 2)
-                y += size.height + Self.spacing
+                centerY = edgeY + Self.depthPeek * depth + visualHeight / 2
             case .bottom:
-                centers[ObjectIdentifier(capsule)] = CGPoint(x: bounds.midX, y: y - size.height / 2)
-                y -= size.height + Self.spacing
+                centerY = edgeY - Self.depthPeek * depth - visualHeight / 2
             }
+
+            let key = ObjectIdentifier(capsule)
+            centers[key] = CGPoint(x: bounds.midX, y: centerY)
+            scales[key] = scale
         }
         targetCenters = centers
+        targetScales = scales
     }
 
     private func placeWithoutAnimation() {
@@ -268,15 +297,30 @@ final class ToastStackView: UIView {
             computeTargetCenters()
         } else {
             targetCenters = [:]
+            targetScales = [:]
         }
         for capsule in live {
-            if let center = targetCenters[ObjectIdentifier(capsule)] {
+            let key = ObjectIdentifier(capsule)
+            if let center = targetCenters[key] {
                 capsule.center = center
             }
+            capsule.transform = CGAffineTransform(scaleX: targetScales[key] ?? 1, y: targetScales[key] ?? 1)
             capsule.alpha = 1
         }
+        updateDepthOrder()
         removeDeparted()
         onFramesInvalidated?()
+    }
+
+    /// The front capsule sits above the ones behind it; a departee goes under
+    /// the whole stack.
+    private func updateDepthOrder() {
+        for capsule in live.reversed() {
+            bringSubviewToFront(capsule)
+        }
+        for capsule in departing {
+            sendSubviewToBack(capsule)
+        }
     }
 
     // MARK: - Animation
@@ -297,11 +341,15 @@ final class ToastStackView: UIView {
         }
 
         let destinations = targetCenters
+        let scales = targetScales
         if reduceMotion {
             for capsule in live where capsule !== draggedCapsule {
-                if let center = destinations[ObjectIdentifier(capsule)] {
+                let key = ObjectIdentifier(capsule)
+                if let center = destinations[key] {
                     capsule.center = center
                 }
+                let scale = scales[key] ?? 1
+                capsule.transform = CGAffineTransform(scaleX: scale, y: scale)
             }
         }
 
@@ -309,9 +357,13 @@ final class ToastStackView: UIView {
         animator.addAnimations { [weak self] in
             guard let self else { return }
             for capsule in self.live {
-                if capsule !== self.draggedCapsule, !reduceMotion,
-                   let center = destinations[ObjectIdentifier(capsule)] {
-                    capsule.center = center
+                let key = ObjectIdentifier(capsule)
+                if capsule !== self.draggedCapsule {
+                    if !reduceMotion, let center = destinations[key] {
+                        capsule.center = center
+                    }
+                    let scale = scales[key] ?? 1
+                    capsule.transform = CGAffineTransform(scaleX: scale, y: scale)
                 }
                 capsule.alpha = 1
             }
@@ -338,9 +390,12 @@ final class ToastStackView: UIView {
     private func springBack() {
         if UIAccessibility.isReduceMotionEnabled {
             for capsule in live {
-                if let target = targetCenters[ObjectIdentifier(capsule)] {
+                let key = ObjectIdentifier(capsule)
+                if let target = targetCenters[key] {
                     capsule.center = target
                 }
+                let scale = targetScales[key] ?? 1
+                capsule.transform = CGAffineTransform(scaleX: scale, y: scale)
                 capsule.alpha = 1
             }
             onFramesInvalidated?()
@@ -351,13 +406,17 @@ final class ToastStackView: UIView {
         generation += 1
         let current = generation
         let destinations = targetCenters
+        let scales = targetScales
         let animator = ToastAnimation.dragSpring()
         animator.addAnimations { [weak self] in
             guard let self else { return }
             for capsule in self.live {
-                if let target = destinations[ObjectIdentifier(capsule)] {
+                let key = ObjectIdentifier(capsule)
+                if let target = destinations[key] {
                     capsule.center = target
                 }
+                let scale = scales[key] ?? 1
+                capsule.transform = CGAffineTransform(scaleX: scale, y: scale)
                 capsule.alpha = 1
             }
         }
@@ -379,19 +438,26 @@ final class ToastStackView: UIView {
         guard let animator else { return }
 
         generation += 1
-        var frozen: [(ToastCapsule, CGRect, CGFloat)] = []
+        var frozen: [(ToastCapsule, CGRect, CGPoint, CGAffineTransform, CGFloat)] = []
         for capsule in live + departing {
             if let presentation = capsule.layer.presentation() {
-                frozen.append((capsule, presentation.frame, CGFloat(presentation.opacity)))
+                frozen.append((
+                    capsule,
+                    presentation.bounds,
+                    presentation.position,
+                    CATransform3DGetAffineTransform(presentation.transform),
+                    CGFloat(presentation.opacity)
+                ))
             }
         }
         animator.stopAnimation(true)
         self.animator = nil
 
-        for (capsule, frame, opacity) in frozen {
+        for (capsule, bounds, position, transform, opacity) in frozen {
             capsule.layer.removeAllAnimations()
-            capsule.bounds = CGRect(origin: .zero, size: frame.size)
-            capsule.center = CGPoint(x: frame.midX, y: frame.midY)
+            capsule.bounds = bounds
+            capsule.center = position
+            capsule.transform = transform
             capsule.alpha = opacity
         }
     }

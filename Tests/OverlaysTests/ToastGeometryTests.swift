@@ -39,7 +39,7 @@ struct ToastGeometryTests {
     }
 
     @Test(arguments: [ToastPlacement.top, .bottom])
-    func stackedToastsKeepEvenSpacing(placement: ToastPlacement) async throws {
+    func stackedToastsOverlapInDepth(placement: ToastPlacement) async throws {
         let (window, stack) = makeStack(placement: placement)
         defer { window.isHidden = true }
 
@@ -49,8 +49,9 @@ struct ToastGeometryTests {
         try await Task.sleep(for: .milliseconds(600))
         forceLayout(window)
 
-        let frames = stack.capsuleFrames(in: stack)
-            .sorted { $0.minY < $1.minY }
+        let frames = stack.capsuleFrames(in: stack).sorted {
+            placement == .top ? $0.minY < $1.minY : $0.maxY > $1.maxY
+        }
         #expect(frames.count == 3)
         guard frames.count == 3 else { return }
 
@@ -63,11 +64,56 @@ struct ToastGeometryTests {
             #expect(frame.height > 0, "frame \(frame)")
             #expect(frame.height <= 60, "frame \(frame)")
             #expect(abs(frame.midX - Self.windowSize.width / 2) <= 1, "frame \(frame)")
+            #expect(frame.minY >= 0, "frame \(frame)")
+            #expect(frame.maxY <= Self.windowSize.height, "frame \(frame)")
         }
 
-        let firstGap = frames[1].minY - frames[0].maxY
-        let secondGap = frames[2].minY - frames[1].maxY
-        #expect(abs(firstGap - secondGap) <= 1, "gaps \(firstGap) and \(secondGap)")
+        #expect(frames[0].height > frames[1].height, "\(frames)")
+        #expect(frames[1].height > frames[2].height, "\(frames)")
+
+        if placement == .top {
+            #expect(frames[1].minY < frames[0].maxY, "\(frames)")
+            #expect(frames[2].minY < frames[1].maxY, "\(frames)")
+            let firstStep = frames[1].minY - frames[0].minY
+            let secondStep = frames[2].minY - frames[1].minY
+            #expect(abs(firstStep - secondStep) <= 1, "steps \(firstStep) and \(secondStep)")
+            #expect(firstStep < frames[0].height, "\(frames)")
+        } else {
+            #expect(frames[1].maxY > frames[0].minY, "\(frames)")
+            #expect(frames[2].maxY > frames[1].minY, "\(frames)")
+            let firstStep = frames[0].maxY - frames[1].maxY
+            let secondStep = frames[1].maxY - frames[2].maxY
+            #expect(abs(firstStep - secondStep) <= 1, "steps \(firstStep) and \(secondStep)")
+            #expect(firstStep < frames[0].height, "\(frames)")
+        }
+    }
+
+    @Test func aTouchReachesTheToastNotTheStackBehindIt() async throws {
+        let window = UIWindow(frame: CGRect(origin: .zero, size: Self.windowSize))
+        let root = UIViewController()
+        window.rootViewController = root
+        window.isHidden = false
+
+        let store = ToastStore()
+        let host = ToastHost(store: store)
+        root.view.addSubviews(host)
+        host.pinEdgesToSuperview()
+        forceLayout(window)
+
+        store.show("Touch me", duration: 0)
+        try await Task.sleep(for: .milliseconds(600))
+        forceLayout(window)
+
+        let stacks = host.subviews.compactMap { $0 as? ToastStackView }
+        let topStack = try #require(stacks.first { $0.placement == .top })
+        let bottomStack = try #require(stacks.first { $0.placement == .bottom })
+        let frame = try #require(topStack.capsuleFrames(in: host).first)
+        let center = CGPoint(x: frame.midX, y: frame.midY)
+
+        #expect(topStack.point(inside: center, with: nil))
+        #expect(!bottomStack.point(inside: center, with: nil))
+        let hit = host.hitTest(center, with: nil)
+        #expect(hit is ToastCapsule, "hit \(String(describing: hit))")
     }
 
     // MARK: - Helpers
