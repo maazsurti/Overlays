@@ -22,8 +22,21 @@ final class ToastCapsule: UIView {
     /// towards the stack's own edge.
     var dragDismissDirection: CGFloat?
 
+    private static let glyphSize: CGFloat = 28
+    private static let contentSpacing: CGFloat = 10
+    private static let leadingMargin: CGFloat = 8
+    private static let trailingMargin: CGFloat = 16
+    private static let verticalMargin: CGFloat = 8
+
     /// The glyph, its spacing and the pill's margins either side of the message.
-    private static let messageInset: CGFloat = 62
+    private static var messageInset: CGFloat {
+        leadingMargin + glyphSize + contentSpacing + trailingMargin
+    }
+
+    /// The glyph's height plus the pill's vertical margins.
+    private static var minimumHeight: CGFloat {
+        glyphSize + 2 * verticalMargin
+    }
 
     init(toast: Toast, onDismiss: @escaping () -> Void) {
         self.id = toast.id
@@ -36,7 +49,6 @@ final class ToastCapsule: UIView {
         )
         super.init(frame: .zero)
 
-        translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = OverlayTheme.current.surface
         layer.cornerRadius = 16
         layer.borderWidth = 1
@@ -45,10 +57,19 @@ final class ToastCapsule: UIView {
         layer.shadowOpacity = 0.12
         layer.shadowRadius = 12
         layer.shadowOffset = CGSize(width: 0, height: 6)
-        directionalLayoutMargins = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 16)
+        directionalLayoutMargins = NSDirectionalEdgeInsets(
+            top: Self.verticalMargin,
+            leading: Self.leadingMargin,
+            bottom: Self.verticalMargin,
+            trailing: Self.trailingMargin
+        )
 
         let glyph = ToastGlyphView(style: toast.style)
-        let content = UIStackView.horizontal(spacing: 10, alignment: .center, views: [glyph, messageLabel])
+        let content = UIStackView.horizontal(
+            spacing: Self.contentSpacing,
+            alignment: .center,
+            views: [glyph, messageLabel]
+        )
 
         addSubviews(content)
         NSLayoutConstraint.activate([
@@ -66,18 +87,17 @@ final class ToastCapsule: UIView {
         fatalError("The app builds its UI in code; init(coder:) is not supported")
     }
 
-    /// The size the pill takes when its message wraps inside `maxWidth`.
+    /// The size the pill takes when its message wraps inside `maxWidth`. The
+    /// capsule is frame-positioned, so this is the only size it ever gets:
+    /// the stack assigns it to `bounds` and nothing else can resize it.
     func fittingSize(maxWidth: CGFloat) -> CGSize {
-        let widthLimit = widthAnchor.constraint(lessThanOrEqualToConstant: maxWidth)
-        widthLimit.isActive = true
-        defer { widthLimit.isActive = false }
-
-        messageLabel.preferredMaxLayoutWidth = max(0, maxWidth - Self.messageInset)
-        let size = systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
-        return CGSize(
-            width: min(ceil(size.width), ceil(maxWidth)),
-            height: ceil(size.height)
+        let contentWidth = max(0, maxWidth - Self.messageInset)
+        let text = messageLabel.sizeThatFits(
+            CGSize(width: contentWidth, height: .greatestFiniteMagnitude)
         )
+        let width = min(maxWidth, Self.messageInset + ceil(text.width))
+        let height = max(Self.minimumHeight, ceil(text.height) + 2 * Self.verticalMargin)
+        return CGSize(width: ceil(width), height: ceil(height))
     }
 
     @objc private func handlePan(_ recognizer: UIPanGestureRecognizer) {
