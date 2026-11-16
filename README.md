@@ -84,9 +84,10 @@ OverlayCenter.shared.showOverlay { dismiss in
 
 ### Behaviour
 
-- Toasts: four styles (`info`, `success`, `warning`, `error`), top or bottom placement. A toast
-  enters from its edge and leaves back towards the same one. An arrival or departure moves the
-  whole stack in one spring, so the survivors slide to their new slots in the same frame.
+- Toasts: four styles (`info`, `success`, `warning`, `error`), top or bottom placement, and a
+  five-second life of their own. A toast enters from its edge and leaves back towards the same
+  one. An arrival or departure moves the whole stack in one spring, so the survivors slide to
+  their new slots in the same frame.
 - A stack overlaps in depth: the toast nearest the edge is full size, and each one behind it is a
   little smaller and tucked under its neighbour.
 - Drag a toast either way to dismiss it: past 40pt, or with a flick. A short drag springs back,

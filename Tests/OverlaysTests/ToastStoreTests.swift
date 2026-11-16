@@ -1,4 +1,5 @@
 import Testing
+import UIKit
 @testable import Overlays
 
 @MainActor
@@ -66,5 +67,51 @@ struct ToastStoreTests {
 
         #expect(store.toasts.filter { $0.placement == .top }.map(\.message) == ["two", "three", "four"])
         #expect(store.toasts.filter { $0.placement == .bottom }.map(\.message) == ["pinned"])
+    }
+
+    @Test func eachToastExpiresOnItsOwnClock() async throws {
+        let store = ToastStore()
+
+        store.show("first", duration: 0.4)
+        try await Task.sleep(for: .milliseconds(200))
+        store.show("second", duration: 0.4)
+
+        try await Task.sleep(for: .milliseconds(300))          // 0.5 s after the first
+        #expect(store.toasts.map(\.message) == ["second"])
+
+        try await Task.sleep(for: .milliseconds(400))          // 0.9 s after the first, 0.7 after the second
+        #expect(store.toasts.isEmpty)
+    }
+
+    @Test func theStackDropsEachToastWhenItsOwnClockExpires() async throws {
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let root = UIViewController()
+        window.rootViewController = root
+        window.isHidden = false
+
+        let store = ToastStore()
+        let host = ToastHost(store: store)
+        root.view.addSubviews(host)
+        host.pinEdgesToSuperview()
+        window.layoutIfNeeded()
+
+        store.show("first", duration: 0.4)
+        try await Task.sleep(for: .milliseconds(200))
+        store.show("second", duration: 0.4)
+
+        try await Task.sleep(for: .milliseconds(300))
+        window.layoutIfNeeded()
+        let firstCheck = visibleToastCount(in: host)
+        #expect(firstCheck == 1, "the first toast was still visible after its own expiry")
+
+        try await Task.sleep(for: .milliseconds(700))
+        window.layoutIfNeeded()
+        #expect(visibleToastCount(in: host) == 0)
+    }
+
+    private func visibleToastCount(in host: ToastHost) -> Int {
+        host.subviews
+            .compactMap { $0 as? ToastStackView }
+            .reduce(0) { $0 + $1.capsuleFrames(in: host).count }
     }
 }

@@ -31,7 +31,7 @@ public final class ToastStore {
         _ message: String,
         style: ToastStyle = .info,
         placement: ToastPlacement = .top,
-        duration: TimeInterval = 2.5
+        duration: TimeInterval = 5
     ) {
         show(Toast(message: message, style: style, placement: placement, duration: duration))
     }

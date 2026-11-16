@@ -12,7 +12,7 @@ public struct Toast: Identifiable, Equatable, Sendable {
         message: String,
         style: ToastStyle = .info,
         placement: ToastPlacement = .top,
-        duration: TimeInterval = 2.5
+        duration: TimeInterval = 5
     ) {
         self.id = id
         self.message = message

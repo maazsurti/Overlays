@@ -44,7 +44,7 @@ public final class OverlayCenter {
         _ message: String,
         style: ToastStyle = .info,
         placement: ToastPlacement = .top,
-        duration: TimeInterval = 2.5
+        duration: TimeInterval = 5
     ) {
         toastStore.show(message, style: style, placement: placement, duration: duration)
     }
