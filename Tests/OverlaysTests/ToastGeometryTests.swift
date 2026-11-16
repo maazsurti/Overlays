@@ -116,6 +116,59 @@ struct ToastGeometryTests {
         #expect(hit is ToastCapsule, "hit \(String(describing: hit))")
     }
 
+    @Test func draggingKeepsTheContentsInsideTheCapsule() async throws {
+        let (window, stack) = makeStack(placement: .top)
+        defer { window.isHidden = true }
+
+        stack.update(with: [Toast(message: "Drag me", duration: 0)])
+        try await Task.sleep(for: .milliseconds(600))
+        forceLayout(window)
+
+        let capsule = try #require(stack.subviews.compactMap { $0 as? ToastCapsule }.first)
+        let content = try #require(capsule.subviews.first)
+        let restCenter = capsule.center
+        let restingContentFrame = content.convert(content.bounds, to: capsule)
+
+        capsule.onDragBegan?()
+        for translation in [CGFloat(10), 25, 45, 70] {
+            capsule.onDragChanged?(translation)
+            stack.setNeedsLayout()
+            stack.layoutIfNeeded()
+
+            let contentFrame = content.convert(content.bounds, to: capsule)
+            #expect(
+                contentFrame == restingContentFrame,
+                "content moved at \(translation): \(contentFrame) vs \(restingContentFrame)"
+            )
+            #expect(
+                abs(capsule.center.y - (restCenter.y + translation)) <= 0.5,
+                "capsule did not follow the translation \(translation): \(capsule.center)"
+            )
+        }
+        capsule.onDragEnded?(70, 0)
+    }
+
+    @Test func draggingMovesOnlyTheToastUnderTheFinger() async throws {
+        let (window, stack) = makeStack(placement: .top)
+        defer { window.isHidden = true }
+
+        stack.update(with: (1...2).map {
+            Toast(message: "Toast \($0)", placement: .top, duration: 0)
+        })
+        try await Task.sleep(for: .milliseconds(600))
+        forceLayout(window)
+
+        let capsules = stack.subviews.compactMap { $0 as? ToastCapsule }
+        let front = try #require(capsules.min { $0.center.y < $1.center.y })
+        let other = try #require(capsules.first { $0 !== front })
+        let otherCenter = other.center
+
+        front.onDragBegan?()
+        front.onDragChanged?(40)
+        #expect(other.center == otherCenter, "the survivor moved to \(other.center)")
+        front.onDragEnded?(40, 0)
+    }
+
     // MARK: - Helpers
 
     private func makeStack(placement: ToastPlacement) -> (UIWindow, ToastStackView) {

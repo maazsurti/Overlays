@@ -96,13 +96,11 @@ final class ToastStackView: UIView {
     }
 
     private static let horizontalPadding: CGFloat = 16
-    private static let verticalPadding: CGFloat = 18
+    private static let verticalPadding: CGFloat = 28
     /// How far each capsule behind the front one peeks out from under it.
     private static let depthPeek: CGFloat = 14
     /// How much smaller each capsule behind the front one is.
     private static let depthScaleStep: CGFloat = 0.04
-    /// How much of the finger's travel the rest of the stack shares.
-    private static let followRatio: CGFloat = 0.45
 
     /// Live capsules in flow order: index 0 sits nearest this stack's edge.
     private var live: [ToastCapsule] = []
@@ -117,7 +115,7 @@ final class ToastStackView: UIView {
 
     private var draggedCapsule: ToastCapsule?
     private var dragTranslation: CGFloat = 0
-    private var dragBaseCenters: [ObjectIdentifier: CGPoint] = [:]
+    private var dragBaseCenter: CGPoint = .zero
 
     private var laidOutSize: CGSize = .zero
     private var needsTargetCenters = false
@@ -228,7 +226,6 @@ final class ToastStackView: UIView {
         }
 
         if draggedCapsule != nil {
-            dragBaseCenters = targetCenters
             applyDrag()
         }
 
@@ -502,9 +499,7 @@ final class ToastStackView: UIView {
         freezeAnimations()
         draggedCapsule = capsule
         dragTranslation = 0
-        dragBaseCenters = Dictionary(
-            uniqueKeysWithValues: live.map { (ObjectIdentifier($0), $0.center) }
-        )
+        dragBaseCenter = capsule.center
         startFrameReporting()
     }
 
@@ -531,17 +526,14 @@ final class ToastStackView: UIView {
         }
     }
 
-    /// The dragged capsule trails the finger; the rest of the stack follows it
-    /// at a fraction of the travel so the group moves together.
+    /// The dragged capsule trails the finger and dims towards the threshold.
+    /// The rest of the stack stays where it is.
     private func applyDrag() {
         guard let draggedCapsule else { return }
-        for capsule in live {
-            guard let base = dragBaseCenters[ObjectIdentifier(capsule)] else { continue }
-            let offset = capsule === draggedCapsule
-                ? dragTranslation
-                : dragTranslation * Self.followRatio
-            capsule.center = CGPoint(x: base.x, y: base.y + offset)
-        }
+        draggedCapsule.center = CGPoint(
+            x: dragBaseCenter.x,
+            y: dragBaseCenter.y + dragTranslation
+        )
         draggedCapsule.alpha = 1 - 0.3 * min(1, abs(dragTranslation) / 120)
     }
 

@@ -26,7 +26,7 @@ final class ToastCapsule: UIView {
     private static let contentSpacing: CGFloat = 10
     private static let leadingMargin: CGFloat = 8
     private static let trailingMargin: CGFloat = 16
-    private static let verticalMargin: CGFloat = 8
+    private static let verticalMargin: CGFloat = 12
 
     /// The glyph, its spacing and the pill's margins either side of the message.
     private static var messageInset: CGFloat {
@@ -43,7 +43,7 @@ final class ToastCapsule: UIView {
         self.onDismiss = onDismiss
         self.messageLabel = UILabel(
             text: toast.message,
-            font: OverlayTheme.current.font(.medium, 14),
+            font: OverlayTheme.current.font(.semibold, 15),
             color: OverlayTheme.current.text,
             numberOfLines: 0
         )

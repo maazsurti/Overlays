@@ -72,10 +72,14 @@ public final class OverlayCenter {
     // MARK: - Loading
 
     /// Dims the screen behind the app's loading card: the brand ring spinning around the
-    /// dumbbell, with an optional message. Taps are blocked until the caller dismisses it.
-    public func showLoading(message: String? = nil) {
+    /// loading glyph, a message line and a caption line under it. Taps are blocked until
+    /// the caller dismisses it.
+    ///
+    /// Omit the caption to draw the theme's `loadingCaption`; pass an empty string to show
+    /// the message alone.
+    public func showLoading(message: String? = nil, caption: String? = nil) {
         showOverlay { _ in
-            LoadingOverlayView(message: message)
+            LoadingOverlayView(message: message, caption: caption)
         }
     }
 

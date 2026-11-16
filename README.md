@@ -6,7 +6,7 @@ above the app, so they show over sheets, covers and navigation without any scree
 ## Install
 
 ```swift
-.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.3.0")
+.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.3.1")
 ```
 
 ## Products
@@ -88,7 +88,7 @@ OverlayCenter.shared.showOverlay { dismiss in
 - A stack overlaps in depth: the toast nearest the edge is full size, and each one behind it is a
   little smaller and tucked under its neighbour.
 - Drag a toast either way to dismiss it: past 40pt, or with a flick. A short drag springs back,
-  and the rest of the stack trails the finger while you drag. Only the capsules take touches.
+  and only the toast under the finger moves. Only the capsules take touches.
 - Reduce Motion: toasts cross-fade in place, and nothing travels.
 - Cancellation errors (`Cancelled`, `CancellationError`, `NSURLErrorDomain -999`) are dropped
   instead of shown.

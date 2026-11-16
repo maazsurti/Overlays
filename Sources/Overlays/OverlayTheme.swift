@@ -28,7 +28,14 @@ public struct OverlayTheme {
 
     public var okTitle: String
     public var cancelTitle: String
+
+    /// What VoiceOver reads for a loading card that has neither a message nor a
+    /// caption of its own.
     public var pleaseWaitText: String
+
+    /// The second line of the loading card, under the message and in
+    /// ``secondaryText``. Nil draws one line; a caller's own caption wins.
+    public var loadingCaption: String?
 
     public var isRightToLeft: () -> Bool
 
@@ -53,6 +60,7 @@ public struct OverlayTheme {
         okTitle: String = "OK",
         cancelTitle: String = "Cancel",
         pleaseWaitText: String = "Please wait",
+        loadingCaption: String? = nil,
         isRightToLeft: @escaping () -> Bool = {
             UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
         },
@@ -75,6 +83,7 @@ public struct OverlayTheme {
         self.okTitle = okTitle
         self.cancelTitle = cancelTitle
         self.pleaseWaitText = pleaseWaitText
+        self.loadingCaption = loadingCaption
         self.isRightToLeft = isRightToLeft
         self.makePrimaryButton = makePrimaryButton
     }

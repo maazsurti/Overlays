@@ -28,6 +28,10 @@ public struct OverlayTheme {
     public var locale: () -> Locale
     public var layoutDirection: () -> LayoutDirection
 
+    /// The second line of the loading card, under the message. Nil draws one line;
+    /// a caller's own caption wins.
+    public var loadingCaption: String?
+
     /// Builds the filled button for a `ModalAlert`'s primary role. Nil draws a filled accent button.
     public var makePrimaryButton: (@MainActor (_ title: LocalizedStringKey, _ action: @escaping () -> Void) -> AnyView)?
 
@@ -45,6 +49,7 @@ public struct OverlayTheme {
         errorIcon: Image = Image(systemName: "xmark.circle.fill"),
         warningIcon: Image = Image(systemName: "exclamationmark.circle.fill"),
         infoIcon: Image = Image(systemName: "info.circle.fill"),
+        loadingCaption: String? = nil,
         locale: @escaping () -> Locale = { .current },
         layoutDirection: @escaping () -> LayoutDirection = { .leftToRight },
         makePrimaryButton: (@MainActor (_ title: LocalizedStringKey, _ action: @escaping () -> Void) -> AnyView)? = nil
@@ -62,6 +67,7 @@ public struct OverlayTheme {
         self.errorIcon = errorIcon
         self.warningIcon = warningIcon
         self.infoIcon = infoIcon
+        self.loadingCaption = loadingCaption
         self.locale = locale
         self.layoutDirection = layoutDirection
         self.makePrimaryButton = makePrimaryButton

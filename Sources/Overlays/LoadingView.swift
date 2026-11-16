@@ -11,8 +11,15 @@ final class LoadingView: UIView {
     private let track = CAShapeLayer()
     private let ringHost = UIView()
     private static let ringSize: CGFloat = 64
+    private static let glyphSize: CGFloat = 28
 
-    init(message: String? = nil) {
+    private let message: String?
+    private let caption: String?
+
+    init(message: String? = nil, caption: String? = nil) {
+        self.message = Self.line(message)
+        self.caption = Self.line(caption ?? OverlayTheme.current.loadingCaption)
+
         super.init(frame: .zero)
 
         backgroundColor = OverlayTheme.current.surface
@@ -44,20 +51,12 @@ final class LoadingView: UIView {
         glyph.tintColor = OverlayTheme.current.text
         glyph.contentMode = .scaleAspectFit
         ringHost.addSubviews(glyph)
-        glyph.constrainSize(width: 28, height: 28)
+        glyph.constrainSize(width: Self.glyphSize, height: Self.glyphSize)
         glyph.center(in: ringHost)
 
         let content = UIStackView.vertical(spacing: 14, alignment: .center, views: [ringHost])
-        if let message {
-            content.addArrangedSubviews(
-                UILabel(
-                    text: message,
-                    font: OverlayTheme.current.font(.semibold, 15),
-                    color: OverlayTheme.current.text,
-                    alignment: .center,
-                    numberOfLines: 0
-                )
-            )
+        if let text = makeText() {
+            content.addArrangedSubview(text)
         }
 
         addSubviews(content)
@@ -72,12 +71,51 @@ final class LoadingView: UIView {
 
         isAccessibilityElement = true
         accessibilityTraits = .updatesFrequently
-        accessibilityLabel = message ?? OverlayTheme.current.pleaseWaitText
+        accessibilityLabel = spokenLines.isEmpty
+            ? OverlayTheme.current.pleaseWaitText
+            : spokenLines.joined(separator: ", ")
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("The app builds its UI in code; init(coder:) is not supported")
+    }
+
+    /// What the card says: the title, then the caption. Either may be absent; the
+    /// ring keeps its size and the card its width, so a line only adds its own height.
+    private var spokenLines: [String] {
+        [message, caption].compactMap { $0 }
+    }
+
+    /// An absent line and an empty one draw the same card, so a caller can ask for no
+    /// caption without knowing the theme's.
+    private static func line(_ text: String?) -> String? {
+        guard let text, !text.isEmpty else { return nil }
+        return text
+    }
+
+    private func makeText() -> UIStackView? {
+        let title = message.map {
+            UILabel(
+                text: $0,
+                font: OverlayTheme.current.font(.semibold, 15),
+                color: OverlayTheme.current.text,
+                alignment: .center,
+                numberOfLines: 0
+            )
+        }
+        let detail = caption.map {
+            UILabel(
+                text: $0,
+                font: OverlayTheme.current.font(.regular, 13),
+                color: OverlayTheme.current.secondaryText,
+                alignment: .center,
+                numberOfLines: 0
+            )
+        }
+        let lines = [title, detail].compactMap { $0 }
+        guard !lines.isEmpty else { return nil }
+        return UIStackView.vertical(spacing: 6, alignment: .center, views: lines)
     }
 
     override func didMoveToWindow() {
@@ -98,8 +136,8 @@ final class LoadingOverlayView: UIView {
 
     private let card: LoadingView
 
-    init(message: String? = nil) {
-        card = LoadingView(message: message)
+    init(message: String? = nil, caption: String? = nil) {
+        card = LoadingView(message: message, caption: caption)
         super.init(frame: .zero)
 
         backgroundColor = UIColor.black.withAlphaComponent(0.35)

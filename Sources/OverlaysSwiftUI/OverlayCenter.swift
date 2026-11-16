@@ -35,13 +35,13 @@ public final class OverlayCenter {
         overlay = nil
     }
 
-    public func showLoading(message: String? = nil) {
+    public func showLoading(message: String? = nil, caption: String? = nil) {
         showOverlay { dismiss in
             Color.black.opacity(0.28)
                 .ignoresSafeArea()
                 .overlay {
 
-                    LoadingView(message: message)
+                    LoadingView(message: message, caption: caption)
                 }
                 .contentShape(Rectangle())
                 .onTapGesture(perform: dismiss)
