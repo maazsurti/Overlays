@@ -43,6 +43,7 @@ OverlayTheme.current = OverlayTheme(
     okTitle: String(localized: "OK"),
     cancelTitle: String(localized: "Cancel"),
     pleaseWaitText: String(localized: "Please wait"),
+    loadingCaption: String(localized: "Just a moment"),
     isRightToLeft: { Locale.current.language.characterDirection == .rightToLeft }
 )
 
@@ -58,8 +59,9 @@ Every value has a system default, so `OverlayTheme()` works as-is.
 OverlayCenter.shared.showToast("Profile saved", style: .success)
 OverlayCenter.shared.showToast("Please enter your email", style: .warning, placement: .bottom)
 
-// A blocking loading card: dimmed screen, spinning accent ring, optional message.
-OverlayCenter.shared.showLoading(message: "Saving…")
+// A blocking loading card: dimmed screen, a spinning accent ring around the glyph,
+// a message over a caption. Omit the caption to draw the theme's.
+OverlayCenter.shared.showLoading(message: "Saving…", caption: "Just a moment")
 defer { OverlayCenter.shared.dismissLoading() }
 
 // Modal alerts for questions that need an answer.
@@ -92,7 +94,9 @@ OverlayCenter.shared.showOverlay { dismiss in
 - Reduce Motion: toasts cross-fade in place, and nothing travels.
 - Cancellation errors (`Cancelled`, `CancellationError`, `NSURLErrorDomain -999`) are dropped
   instead of shown.
-- Loading card: cannot be tapped away; it goes when you dismiss it. Reduce Motion stops the spin.
+- Loading card: a ring, its glyph, a message and a caption, on one card that takes the height
+  of the lines it shows. It cannot be tapped away; it goes when you dismiss it. Reduce Motion
+  stops the spin. VoiceOver reads the card as one element, its lines once.
 - Overlays follow `isRightToLeft` for their layout direction.
 
 ## Requirements
