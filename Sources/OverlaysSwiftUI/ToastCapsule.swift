@@ -48,13 +48,16 @@ struct ToastCapsule: View {
 
         DragGesture(minimumDistance: 4)
             .onChanged { value in
-                let translation = value.translation.height
-                dragOffset = toast.placement == .top ? min(0, translation) : max(0, translation)
+                dragOffset = value.translation.height
             }
-            .onEnded { _ in
-                if abs(dragOffset) > 40 {
+            .onEnded { value in
+                // The prediction runs about a quarter second ahead, so the
+                // difference is the gesture's speed in points per second.
+                let velocity = (value.predictedEndTranslation.height - value.translation.height) * 4
+                switch ToastDrag.outcome(offset: value.translation.height, velocity: velocity) {
+                case .dismiss:
                     onDismiss()
-                } else {
+                case .springBack:
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         dragOffset = 0
                     }

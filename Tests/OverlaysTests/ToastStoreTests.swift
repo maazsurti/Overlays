@@ -45,4 +45,26 @@ struct ToastStoreTests {
 
         #expect(store.toasts.map(\.message) == ["Cancelled"])
     }
+
+    @Test func aFourthToastDropsTheOldestAndKeepsTheRestInOrder() {
+        let store = ToastStore()
+
+        for message in ["one", "two", "three", "four"] {
+            store.show(message, duration: 0)
+        }
+
+        #expect(store.toasts.map(\.message) == ["two", "three", "four"])
+    }
+
+    @Test func placementsTrimIndependently() {
+        let store = ToastStore()
+
+        for message in ["one", "two", "three", "four"] {
+            store.show(message, duration: 0)
+        }
+        store.show("pinned", placement: .bottom, duration: 0)
+
+        #expect(store.toasts.filter { $0.placement == .top }.map(\.message) == ["two", "three", "four"])
+        #expect(store.toasts.filter { $0.placement == .bottom }.map(\.message) == ["pinned"])
+    }
 }

@@ -6,7 +6,7 @@ above the app, so they show over sheets, covers and navigation without any scree
 ## Install
 
 ```swift
-.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.1.2")
+.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.2.0")
 ```
 
 ## Products
@@ -54,7 +54,7 @@ Every value has a system default, so `OverlayTheme()` works as-is.
 ## Use
 
 ```swift
-// Toasts stack, auto-dismiss, and swipe away.
+// Toasts enter from their edge, stack, auto-dismiss, and swipe away either way.
 OverlayCenter.shared.showToast("Profile saved", style: .success)
 OverlayCenter.shared.showToast("Please enter your email", style: .warning, placement: .bottom)
 
@@ -82,9 +82,14 @@ OverlayCenter.shared.showOverlay { dismiss in
 
 ### Behaviour
 
-- Toasts: four styles (`info`, `success`, `warning`, `error`), top or bottom placement, a stack
-  that springs in and out, drag to dismiss. Cancellation errors (`Cancelled`,
-  `CancellationError`, `NSURLErrorDomain -999`) are dropped instead of shown.
+- Toasts: four styles (`info`, `success`, `warning`, `error`), top or bottom placement. A toast
+  enters from its edge and leaves back towards the same one. An arrival or departure moves the
+  whole stack in one spring, so the survivors slide to their new slots in the same frame.
+- Drag a toast either way to dismiss it: past 40pt, or with a flick. A short drag springs back,
+  and the rest of the stack trails the finger while you drag.
+- Reduce Motion: toasts cross-fade in place, and nothing travels.
+- Cancellation errors (`Cancelled`, `CancellationError`, `NSURLErrorDomain -999`) are dropped
+  instead of shown.
 - Loading card: cannot be tapped away; it goes when you dismiss it. Reduce Motion stops the spin.
 - Overlays follow `isRightToLeft` for their layout direction.
 

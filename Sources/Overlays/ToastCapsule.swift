@@ -5,25 +5,38 @@
 import UIKit
 
 /// One toast: a white rounded pill with the style's glyph and the message.
-/// Dragging it past 40pt towards its own edge dismisses it; anything shorter
-/// springs back.
+/// A drag of either direction past 40pt — or a fast flick — dismisses it;
+/// anything shorter springs back.
 @MainActor
 final class ToastCapsule: UIView {
 
-    private let toast: Toast
+    let id: UUID
     private let onDismiss: () -> Void
+    private let messageLabel: UILabel
 
-    /// Called whenever the capsule stops moving, so the host can re-report the
-    /// frames the toast window hit-tests against.
-    var onSettled: (() -> Void)?
+    var onDragBegan: (() -> Void)?
+    var onDragChanged: ((CGFloat) -> Void)?
+    var onDragEnded: ((_ translation: CGFloat, _ velocity: CGFloat) -> Void)?
 
-    private var dragOffset: CGFloat = 0
+    /// The way out the user chose with the last drag, or `nil` to leave
+    /// towards the stack's own edge.
+    var dragDismissDirection: CGFloat?
+
+    /// The glyph, its spacing and the pill's margins either side of the message.
+    private static let messageInset: CGFloat = 62
 
     init(toast: Toast, onDismiss: @escaping () -> Void) {
-        self.toast = toast
+        self.id = toast.id
         self.onDismiss = onDismiss
+        self.messageLabel = UILabel(
+            text: toast.message,
+            font: OverlayTheme.current.font(.medium, 14),
+            color: OverlayTheme.current.text,
+            numberOfLines: 0
+        )
         super.init(frame: .zero)
 
+        translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = OverlayTheme.current.surface
         layer.cornerRadius = 16
         layer.borderWidth = 1
@@ -35,13 +48,7 @@ final class ToastCapsule: UIView {
         directionalLayoutMargins = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 16)
 
         let glyph = ToastGlyphView(style: toast.style)
-        let message = UILabel(
-            text: toast.message,
-            font: OverlayTheme.current.font(.medium, 14),
-            color: OverlayTheme.current.text,
-            numberOfLines: 0
-        )
-        let content = UIStackView.horizontal(spacing: 10, alignment: .center, views: [glyph, message])
+        let content = UIStackView.horizontal(spacing: 10, alignment: .center, views: [glyph, messageLabel])
 
         addSubviews(content)
         NSLayoutConstraint.activate([
@@ -59,25 +66,36 @@ final class ToastCapsule: UIView {
         fatalError("The app builds its UI in code; init(coder:) is not supported")
     }
 
+    /// The size the pill takes when its message wraps inside `maxWidth`.
+    func fittingSize(maxWidth: CGFloat) -> CGSize {
+        let widthLimit = widthAnchor.constraint(lessThanOrEqualToConstant: maxWidth)
+        widthLimit.isActive = true
+        defer { widthLimit.isActive = false }
+
+        messageLabel.preferredMaxLayoutWidth = max(0, maxWidth - Self.messageInset)
+        let size = systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
+        return CGSize(
+            width: min(ceil(size.width), ceil(maxWidth)),
+            height: ceil(size.height)
+        )
+    }
+
     @objc private func handlePan(_ recognizer: UIPanGestureRecognizer) {
         switch recognizer.state {
-        case .changed:
-            let translation = recognizer.translation(in: self).y
-            dragOffset = toast.placement == .top ? min(0, translation) : max(0, translation)
-            transform = CGAffineTransform(translationX: 0, y: dragOffset)
+        case .began:
+            onDragBegan?()
 
-        case .ended, .cancelled, .failed:
-            guard abs(dragOffset) > 40 else {
-                let animator = ToastAnimation.dragSpring()
-                animator.addAnimations { self.transform = .identity }
-                animator.addCompletion { _ in
-                    self.dragOffset = 0
-                    self.onSettled?()
-                }
-                animator.startAnimation()
-                return
-            }
-            onDismiss()
+        case .changed:
+            onDragChanged?(recognizer.translation(in: superview).y)
+
+        case .ended:
+            onDragEnded?(
+                recognizer.translation(in: superview).y,
+                recognizer.velocity(in: superview).y
+            )
+
+        case .cancelled, .failed:
+            onDragEnded?(recognizer.translation(in: superview).y, 0)
 
         default:
             break
