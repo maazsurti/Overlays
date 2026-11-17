@@ -114,6 +114,41 @@ struct ToastDragStabilityTests {
         }
     }
 
+    /// The pill follows the finger point for point: every drag callback moves it
+    /// by exactly the change in the gesture's translation, with no rounding, no
+    /// dropped step and no step of its own.
+    @Test func aDragMovesThePillByExactlyTheFingersTravel() async throws {
+        let (window, stack) = makeStack(placement: .top, topSafeArea: 0)
+        defer { window.isHidden = true }
+
+        stack.update(with: [Toast(message: Self.message, placement: .top, duration: 0)])
+        try await Task.sleep(for: .milliseconds(700))
+        forceLayout(window)
+
+        let capsule = try #require(frontCapsule(in: stack))
+        let restCenter = capsule.center
+
+        capsule.onDragBegan?()
+        var previous: CGFloat = 0
+        // Fractional steps, as a finger delivers them.
+        for translation in [CGFloat(0.5), 1.25, 2.75, 6.5, 11.75, 17.25, 24.5, 31.75, 35] {
+            capsule.onDragChanged?(translation)
+            stack.layoutIfNeeded()
+
+            #expect(
+                abs(capsule.center.y - (restCenter.y + translation)) < 0.0001,
+                "at \(translation)pt the capsule is at \(capsule.center.y), not \(restCenter.y + translation)"
+            )
+            #expect(
+                abs((capsule.center.y - (restCenter.y + previous)) - (translation - previous)) < 0.0001,
+                "the step from \(previous) to \(translation) moved the capsule by \(capsule.center.y - restCenter.y - previous)"
+            )
+            previous = translation
+        }
+
+        capsule.onDragEnded?(35, 0)
+    }
+
     @Test func aDragThatDismissesDoesNotResizeTheCapsule() async throws {
         let (window, stack) = makeStack(placement: .top, topSafeArea: 0)
         defer { window.isHidden = true }
