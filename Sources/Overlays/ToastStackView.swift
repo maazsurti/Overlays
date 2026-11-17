@@ -26,7 +26,7 @@ enum ToastAnimation {
 /// edge and leaves towards the same one; a drag chooses the way out instead.
 enum ToastMotion {
     /// How far a capsule travels as it enters or leaves the stack.
-    static let travel: CGFloat = 44
+    static let travel: CGFloat = 32
 
     /// The distance from its resting slot a capsule starts its entrance at.
     static func entryOffset(for placement: ToastPlacement) -> CGFloat {
@@ -95,8 +95,17 @@ final class ToastStackView: UIView {
         }
     }
 
+    /// How far the keyboard covers this stack's bottom edge, measured by
+    /// `ToastHost`.
+    var keyboardInset: CGFloat = 0 {
+        didSet {
+            guard keyboardInset != oldValue else { return }
+            needsTargetCenters = true
+            setNeedsLayout()
+        }
+    }
+
     private static let horizontalPadding: CGFloat = 16
-    private static let verticalPadding: CGFloat = 28
     /// How far each capsule behind the front one peeks out from under it.
     private static let depthPeek: CGFloat = 14
     /// How much smaller each capsule behind the front one is.
@@ -156,6 +165,14 @@ final class ToastStackView: UIView {
             capsule.alpha = 1
         }
         onFramesInvalidated?()
+    }
+
+    /// The edge the stack measures from moves with the safe area — a rotation,
+    /// the home indicator — even when the stack's own size does not.
+    override func safeAreaInsetsDidChange() {
+        super.safeAreaInsetsDidChange()
+        needsTargetCenters = true
+        setNeedsLayout()
     }
 
     /// Only the capsules take touches. The stacks fill the whole window, so
@@ -257,9 +274,14 @@ final class ToastStackView: UIView {
         var edgeY: CGFloat
         switch placement {
         case .top:
-            edgeY = safeAreaInsets.top + Self.verticalPadding
+            edgeY = ToastLayout.topEdgeY(safeAreaTop: safeAreaInsets.top)
         case .bottom:
-            edgeY = bounds.height - safeAreaInsets.bottom - Self.verticalPadding - bottomInset
+            edgeY = ToastLayout.bottomEdgeY(
+                height: bounds.height,
+                safeAreaBottom: safeAreaInsets.bottom,
+                chromeInset: bottomInset,
+                keyboardInset: keyboardInset
+            )
         }
 
         var centers: [ObjectIdentifier: CGPoint] = [:]

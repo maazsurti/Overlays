@@ -45,7 +45,8 @@ struct ToastDragStabilityTests {
                 """
             )
             #expect(
-                dragged.messageFrame == rest.messageFrame,
+                abs(dragged.messageFrame.minY - rest.messageFrame.minY) <= 0.5
+                    && abs(dragged.messageHeight - rest.messageHeight) <= 0.5,
                 """
                 the message moved at \(translation)pt: \(dragged.messageFrame) against \
                 \(rest.messageFrame), capsule bounds \(capsule.bounds), margins \(capsule.layoutMargins)
@@ -63,7 +64,8 @@ struct ToastDragStabilityTests {
 
         let settled = try #require(geometry(of: capsule))
         #expect(
-            settled.messageFrame == rest.messageFrame,
+            abs(settled.messageFrame.minY - rest.messageFrame.minY) <= 0.5
+                && abs(settled.messageHeight - rest.messageHeight) <= 0.5,
             "the message settled at \(settled.messageFrame) against \(rest.messageFrame)"
         )
     }

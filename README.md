@@ -6,7 +6,7 @@ above the app, so they show over sheets, covers and navigation without any scree
 ## Install
 
 ```swift
-.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.3.3")
+.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.3.4")
 ```
 
 ## Products
@@ -44,7 +44,10 @@ OverlayTheme.current = OverlayTheme(
     cancelTitle: String(localized: "Cancel"),
     pleaseWaitText: String(localized: "Please wait"),
     loadingCaption: String(localized: "Just a moment"),
-    isRightToLeft: { Locale.current.language.characterDirection == .rightToLeft }
+    isRightToLeft: { Locale.current.language.characterDirection == .rightToLeft },
+    toastScrimColor: .black,
+    toastScrimOpacity: 0.36,
+    toastScrimHeightFraction: 0.25
 )
 
 OverlayCenter.shared.attach(to: windowScene)
@@ -88,6 +91,16 @@ OverlayCenter.shared.showOverlay { dismiss in
   five-second life of their own. A toast enters from its edge and leaves back towards the same
   one. An arrival or departure moves the whole stack in one spring, so the survivors slide to
   their new slots in the same frame.
+- A top toast sits 28pt under the safe area. A bottom toast sits 12pt above the chrome that holds
+  the bottom of the screen: the keyboard while it is up, otherwise the value written to
+  `toastStore.bottomChromeInset` — the height your own bar reaches above the bottom safe area, `0`
+  when it is out of the way. A container that dips into the safe area publishes only the part that
+  stands proud of it, so the toast keeps the same 12pt gap over the bar and over the safe area
+  alone.
+- The bottom toasts sit on a scrim: the theme's `toastScrimColor`, at `toastScrimOpacity` on the
+  screen's bottom edge and clear at the top of `toastScrimHeightFraction` of the screen. It fades
+  in with the first bottom toast and out with the last, stays put while they swap, and never takes
+  a touch. Reduce Motion shows and hides it without a fade. `toastScrimOpacity: 0` draws none.
 - A stack overlaps in depth: the toast nearest the edge is full size, and each one behind it is a
   little smaller and tucked under its neighbour.
 - Drag a toast either way to dismiss it: past 40pt, or with a flick. A short drag springs back,

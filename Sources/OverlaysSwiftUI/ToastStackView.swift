@@ -25,7 +25,7 @@ struct ToastStackView: View {
             maxHeight: .infinity,
             alignment: placement == .top ? .top : .bottom
         )
-        .padding(.top, placement == .top ? 18 : 0)
-        .padding(.bottom, placement == .bottom ? 18 + bottomInset : 0)
+        .padding(.top, placement == .top ? 28 : 0)
+        .padding(.bottom, placement == .bottom ? 12 + bottomInset : 0)
     }
 }

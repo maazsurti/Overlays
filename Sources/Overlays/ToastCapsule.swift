@@ -23,10 +23,10 @@ final class ToastCapsule: UIView {
     var dragDismissDirection: CGFloat?
 
     private static let glyphSize: CGFloat = 28
-    private static let contentSpacing: CGFloat = 10
+    private static let contentSpacing: CGFloat = 12
     private static let leadingMargin: CGFloat = 8
     private static let trailingMargin: CGFloat = 16
-    private static let verticalMargin: CGFloat = 12
+    private static let verticalMargin: CGFloat = 10
 
     /// The glyph, its spacing and the pill's margins either side of the message.
     private static var messageInset: CGFloat {
@@ -43,7 +43,7 @@ final class ToastCapsule: UIView {
         self.onDismiss = onDismiss
         self.messageLabel = UILabel(
             text: toast.message,
-            font: OverlayTheme.current.font(.semibold, 15),
+            font: OverlayTheme.current.font(.semibold, 16),
             color: OverlayTheme.current.text,
             numberOfLines: 0
         )
@@ -51,12 +51,12 @@ final class ToastCapsule: UIView {
 
         backgroundColor = OverlayTheme.current.surface
         layer.cornerRadius = 16
-        layer.borderWidth = 1
+        layer.borderWidth = 0.5
         layer.borderColor = OverlayTheme.current.border.cgColor
         layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOpacity = 0.12
-        layer.shadowRadius = 12
-        layer.shadowOffset = CGSize(width: 0, height: 6)
+        layer.shadowOpacity = 0.18
+        layer.shadowRadius = 14
+        layer.shadowOffset = CGSize(width: 0, height: 8)
         directionalLayoutMargins = NSDirectionalEdgeInsets(
             top: Self.verticalMargin,
             leading: Self.leadingMargin,

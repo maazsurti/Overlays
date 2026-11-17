@@ -39,6 +39,17 @@ public struct OverlayTheme {
 
     public var isRightToLeft: () -> Bool
 
+    /// The gradient the bottom toasts sit on, at its strongest on the screen's
+    /// bottom edge and clear at the top of its height.
+    public var toastScrimColor: UIColor
+
+    /// The scrim's opacity on the bottom edge. `0` draws no scrim at all.
+    public var toastScrimOpacity: CGFloat
+
+    /// How tall the scrim is as a fraction of the screen — `0.25` for the lower
+    /// quarter.
+    public var toastScrimHeightFraction: CGFloat
+
     /// Builds the filled button for a `ModalAlert`'s primary role. Nil draws a filled accent button.
     public var makePrimaryButton: (@MainActor (_ title: String, _ action: @escaping @MainActor () -> Void) -> UIButton)?
 
@@ -64,6 +75,9 @@ public struct OverlayTheme {
         isRightToLeft: @escaping () -> Bool = {
             UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
         },
+        toastScrimColor: UIColor = .black,
+        toastScrimOpacity: CGFloat = 0.28,
+        toastScrimHeightFraction: CGFloat = 0.25,
         makePrimaryButton: (@MainActor (_ title: String, _ action: @escaping @MainActor () -> Void) -> UIButton)? = nil
     ) {
         self.accent = accent
@@ -85,6 +99,9 @@ public struct OverlayTheme {
         self.pleaseWaitText = pleaseWaitText
         self.loadingCaption = loadingCaption
         self.isRightToLeft = isRightToLeft
+        self.toastScrimColor = toastScrimColor
+        self.toastScrimOpacity = toastScrimOpacity
+        self.toastScrimHeightFraction = toastScrimHeightFraction
         self.makePrimaryButton = makePrimaryButton
     }
 

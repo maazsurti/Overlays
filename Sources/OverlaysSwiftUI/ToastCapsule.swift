@@ -8,7 +8,7 @@ struct ToastCapsule: View {
 
     var body: some View {
 
-        HStack(spacing: 10) {
+        HStack(spacing: 12) {
 
             toast.style.image
                 .resizable()
@@ -19,17 +19,17 @@ struct ToastCapsule: View {
                 .background(toast.style.tint.opacity(0.14), in: .circle)
 
             Text(toast.message)
-                .font(OverlayTheme.current.font(.medium, 14))
+                .font(OverlayTheme.current.font(.semibold, 16))
                 .foregroundStyle(OverlayTheme.current.text)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.leading, 8)
         .padding(.trailing, 16)
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .background(OverlayTheme.current.surface, in: .rect(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(OverlayTheme.current.border, lineWidth: 1)
+                .stroke(OverlayTheme.current.border, lineWidth: 0.5)
         }
         .background(
             GeometryReader { geo in
@@ -39,7 +39,7 @@ struct ToastCapsule: View {
                 )
             }
         )
-        .shadow(color: .black.opacity(0.12), radius: 12, y: 6)
+        .shadow(color: .black.opacity(0.18), radius: 14, y: 8)
         .offset(y: dragOffset)
         .gesture(dragGesture)
     }
