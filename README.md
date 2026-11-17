@@ -6,7 +6,7 @@ above the app, so they show over sheets, covers and navigation without any scree
 ## Install
 
 ```swift
-.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.3.4")
+.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.3.5")
 ```
 
 ## Products
@@ -96,7 +96,8 @@ OverlayCenter.shared.showOverlay { dismiss in
   `toastStore.bottomChromeInset` — the height your own bar reaches above the bottom safe area, `0`
   when it is out of the way. A container that dips into the safe area publishes only the part that
   stands proud of it, so the toast keeps the same 12pt gap over the bar and over the safe area
-  alone.
+  alone. A toast is placed against the inset current at that moment; writing a new inset moves the
+  toasts already on screen to the new gap.
 - The bottom toasts sit on a scrim: the theme's `toastScrimColor`, at `toastScrimOpacity` on the
   screen's bottom edge and clear at the top of `toastScrimHeightFraction` of the screen. It fades
   in with the first bottom toast and out with the last, stays put while they swap, and never takes

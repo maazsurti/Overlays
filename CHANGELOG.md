@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.5
+
+- A bottom toast is placed against the clearance current when it is placed: the stack reads
+  `bottomChromeInset` before it positions a new pill, so the pill enters and rests at the gap its
+  chrome gives it.
+- An inset that changes while a pill is entering is applied once the spring ends, moving the pill
+  to its new slot without restarting the entrance.
+
 ## 1.3.4
 
 - A bottom toast sits 12pt above the chrome that holds the bottom of the screen — the keyboard

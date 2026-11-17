@@ -86,7 +86,10 @@ final class ToastStackView: UIView {
     var onFramesInvalidated: (() -> Void)?
 
     /// Clearance for the main tab shell's floating bar, written by
-    /// `ToastStore.bottomChromeInset`.
+    /// `ToastStore.bottomChromeInset`. A stack places a pill against the
+    /// clearance it holds at that moment, so the host writes it before
+    /// `update(with:)`; a change that arrives while a pill is in flight
+    /// re-places the stack once the animation has ended.
     var bottomInset: CGFloat = 0 {
         didSet {
             guard bottomInset != oldValue else { return }
@@ -248,6 +251,9 @@ final class ToastStackView: UIView {
 
         updateDepthOrder()
         animateReflow(reduceMotion: reduceMotion)
+        // Every visible capsule was just placed against the current bounds and
+        // clearance, so no later layout pass has anything left to apply.
+        needsTargetCenters = false
     }
 
     /// The visible capsules' frames, in `view`'s coordinate space. The toast
@@ -314,6 +320,7 @@ final class ToastStackView: UIView {
     private func placeWithoutAnimation() {
         if bounds.width > 0 {
             computeTargetCenters()
+            needsTargetCenters = false
         } else {
             targetCenters = [:]
             targetScales = [:]
@@ -488,9 +495,11 @@ final class ToastStackView: UIView {
         departing.removeAll()
     }
 
+    /// Asks for a placement now that the animation in flight has ended. The
+    /// flag stays set until `layoutSubviews` consumes it, because that pass is
+    /// where the new clearance is read.
     private func applyDeferredLayout() {
         guard needsTargetCenters else { return }
-        needsTargetCenters = false
         setNeedsLayout()
     }
 

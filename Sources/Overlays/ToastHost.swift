@@ -83,9 +83,12 @@ final class ToastHost: UIView {
         OverlayDirection.apply(to: window)
 
         let bottom = store.toasts.filter { $0.placement == .bottom }
+        // The clearance is part of where a pill goes, so it reaches the stack
+        // before the stack places anything: a new pill starts against the
+        // chrome it lives above, not the one from the previous render.
+        bottomStack.bottomInset = store.bottomChromeInset
         topStack.update(with: store.toasts.filter { $0.placement == .top })
         bottomStack.update(with: bottom)
-        bottomStack.bottomInset = store.bottomChromeInset
 
         scrim.applyTheme()
         let transition = ToastScrimTransition.between(before: bottomCount, after: bottom.count)
