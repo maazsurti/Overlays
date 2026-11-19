@@ -1,21 +1,54 @@
 # Overlays
 
-Toasts, modal alerts and a loading card for iOS, in UIKit or SwiftUI.
+Toasts, modal alerts and a loading card for iOS, in UIKit or SwiftUI. Each overlay is drawn in a
+window of its own above the app.
 
-Each overlay is drawn in a window of its own above the app, so it shows over a sheet, a full-screen
-cover or a pushed screen without any screen owning it. Nothing in your view hierarchy has to make
-room for it.
+## The problem
+
+A toast or an alert presented by a screen belongs to that screen: a sheet, a full-screen cover or a
+pushed screen covers it, and every screen that needs one writes the same presentation code again.
+Loading states drift the same way — a different spinner, dim and message in each flow.
+
+## What it looks like
+
+A toast slides in from the top or bottom edge as a rounded pill with a glyph and a message, over
+whatever is on screen, and leaves after five seconds or on a swipe. An alert dims the app and
+centres a card with an optional icon, a title, an optional message and one or more buttons. The
+loading card dims the screen and shows a spinner, a message and a caption until the caller dismisses
+it.
+
+## When to use it
+
+Use it when a message or a wait has to appear over the whole app — above sheets, covers and pushed
+screens — and no screen should own it.
+
+- **UIKit:** the `Overlays` product, with no dependencies.
+- **SwiftUI:** the `OverlaysSwiftUI` product, for an app built on `SimpleRouterSwiftUI`; its hosts
+  attach through the router's `OverlayAdapter`.
+
+Skip it for content that belongs in a screen's own layout, such as a banner inside a scroll view or
+a progress bar under a header. This package presents in a separate window, not in a screen's view
+hierarchy.
+
+## At a glance
+
+```swift
+import Overlays
+
+OverlayCenter.shared.attach(to: windowScene)   // once, after the main window exists
+OverlayCenter.shared.showToast("Profile saved", style: .success)
+OverlayCenter.shared.showLoading(message: "Saving…")
+OverlayCenter.shared.dismissLoading()
+```
 
 ## What you get
 
-- **Toasts** — four styles (`info`, `success`, `warning`, `error`) from the top or bottom edge. They
-  stack, dismiss themselves after five seconds, and swipe away in either direction.
-- **Modal alerts** — a dimmed backdrop and a card with an optional icon, title, message and one or
-  more buttons. Presets cover a one-button notice and a confirm/cancel.
-- **A loading card** — a dimmed screen with a spinner, a message and a caption, so a blocking wait
-  has one standard look.
 - **Custom overlays** — any `UIView` or SwiftUI view in the same slot, with the same window
   behaviour.
+- **Four toast styles** — `info`, `success`, `warning` and `error`, each with its own glyph and tint.
+  Three show per edge; a fourth pushes the oldest out.
+- **Alert presets** — a one-button notice and a confirm/cancel, or a card built from your own
+  `ModalAlertButton`s.
 - **Your theme** — colours, type and icons set once at launch.
 - **Right-to-left** — each overlay window takes its direction from the theme.
 - **Reduce Motion** — toasts change in place without travelling, and the UIKit loading ring stops.
@@ -36,7 +69,7 @@ In Xcode: **File ▸ Add Package Dependencies…**, paste
 Or in `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.3.6")
+.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.3.7")
 ```
 
 Products:

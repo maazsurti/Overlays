@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.7
+
+- The README opens with the problem the package solves, what each overlay looks like on screen, when
+  to use it and the `SimpleRouterSwiftUI` requirement of the SwiftUI product, before the feature
+  list.
+- No code changes.
+
 ## 1.3.6
 
 - README rewritten around the package itself: what each overlay is, what it looks like, quick starts
