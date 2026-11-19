@@ -115,6 +115,141 @@ struct ToastLayoutTests {
         #expect(ToastScrimTransition.fadeOutDuration > 0)
     }
 
+    @Test func aTopScrimReachesPastTheLowestCapsule() {
+        let height = ToastScrimLayout.height(
+            edge: .top,
+            hostHeight: Self.height,
+            capsuleFrames: [CGRect(x: 16, y: 90, width: 370, height: 44)],
+            padding: 120,
+            minimum: 100
+        )
+
+        #expect(height == CGFloat(134 + 120))
+    }
+
+    @Test func aBottomScrimStartsAboveTheHighestCapsule() {
+        let height = ToastScrimLayout.height(
+            edge: .bottom,
+            hostHeight: Self.height,
+            capsuleFrames: [CGRect(x: 16, y: 774, width: 370, height: 44)],
+            padding: 120,
+            minimum: 100
+        )
+
+        #expect(height == Self.height - 774 + 120)
+    }
+
+    @Test func aScrimWithNoCapsuleKeepsTheThemeMinimum() {
+        for edge in [ToastScrimEdge.top, .bottom] {
+            let height = ToastScrimLayout.height(
+                edge: edge,
+                hostHeight: Self.height,
+                capsuleFrames: [],
+                padding: 120,
+                minimum: 100
+            )
+
+            #expect(height == 100)
+        }
+    }
+
+    @Test func aScrimNeverReachesPastTheScreen() {
+        for edge in [ToastScrimEdge.top, .bottom] {
+            let height = ToastScrimLayout.height(
+                edge: edge,
+                hostHeight: Self.height,
+                capsuleFrames: [CGRect(x: 0, y: 0, width: 400, height: Self.height)],
+                padding: 120,
+                minimum: 100
+            )
+
+            #expect(height == Self.height)
+        }
+    }
+
+    @Test func theBlurLeavesUnderReduceTransparency() {
+        #expect(
+            ToastScrimView.showsBlur(
+                style: .systemThinMaterialLight,
+                isShown: true,
+                reduceTransparency: false
+            )
+        )
+        #expect(
+            !ToastScrimView.showsBlur(
+                style: .systemThinMaterialLight,
+                isShown: true,
+                reduceTransparency: true
+            )
+        )
+        #expect(!ToastScrimView.showsBlur(style: nil, isShown: true, reduceTransparency: false))
+        #expect(
+            !ToastScrimView.showsBlur(
+                style: .systemThinMaterialLight,
+                isShown: false,
+                reduceTransparency: false
+            )
+        )
+    }
+
+    @Test func anErrorAtTheEdgeStrengthensTheScrim() {
+        #expect(
+            ToastScrimLayout.opacity(for: [.info, .success], normal: 0.28, error: 0.6) == 0.28
+        )
+        #expect(
+            ToastScrimLayout.opacity(for: [.info, .error], normal: 0.28, error: 0.6) == 0.6
+        )
+        #expect(
+            ToastScrimLayout.opacity(for: [], normal: 0.28, error: 0.6) == 0.28
+        )
+    }
+
+    @Test func theTopScrimArrivesWithATopToastAndLeavesTheBottomOneAlone() async throws {
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: Self.height))
+        let root = UIViewController()
+        window.rootViewController = root
+        window.isHidden = false
+
+        let store = ToastStore()
+        let host = ToastHost(store: store)
+        root.view.addSubviews(host)
+        host.pinEdgesToSuperview()
+        window.layoutIfNeeded()
+
+        let scrims = host.subviews.compactMap { $0 as? ToastScrimView }
+        let topScrim = try #require(scrims.first { $0.edge == .top })
+        let bottomScrim = try #require(scrims.first { $0.edge == .bottom })
+        #expect(scrims.count == 2)
+
+        store.show("Copied", placement: .top, duration: 0)
+        try await Task.sleep(for: .milliseconds(600))
+        window.layoutIfNeeded()
+
+        #expect(topScrim.alpha == 1)
+        #expect(bottomScrim.alpha == 0)
+        #expect(topScrim.frame.minY == 0)
+
+        let capsule = try #require(
+            host.subviews.filter { $0 is ToastStackView }
+                .flatMap(\.subviews)
+                .compactMap { $0 as? ToastCapsule }
+                .first
+        )
+        let capsuleFrame = capsule.convert(capsule.bounds, to: host)
+        #expect(
+            topScrim.frame.height
+                == capsuleFrame.maxY + OverlayTheme.current.toastScrimPadding
+        )
+
+        store.dismissAll()
+        try await Task.sleep(for: .milliseconds(600))
+
+        #expect(topScrim.alpha == 0)
+        #expect(bottomScrim.alpha == 0)
+
+        window.isHidden = true
+    }
+
     @Test func theScrimNeverTakesATouch() async throws {
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: Self.height))
         let root = UIViewController()

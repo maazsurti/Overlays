@@ -20,6 +20,14 @@ struct ToastStackView: View {
             }
         }
         .padding(.horizontal, 16)
+        .background(
+            GeometryReader { geo in
+                Color.clear.preference(
+                    key: ToastStackFramesKey.self,
+                    value: [placement: geo.frame(in: .global)]
+                )
+            }
+        )
         .frame(
             maxWidth: .infinity,
             maxHeight: .infinity,

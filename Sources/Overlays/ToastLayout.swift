@@ -40,8 +40,8 @@ enum ToastLayout {
     }
 }
 
-/// How the bottom scrim moves when the store changes: it fades in with the
-/// first bottom toast and out with the last, and stays put while toasts swap.
+/// How each scrim moves when the store changes: it fades in with the first
+/// toast at its edge and out with the last, and stays put while toasts swap.
 enum ToastScrimTransition: Equatable {
     case none
     case fadeIn
@@ -57,4 +57,52 @@ enum ToastScrimTransition: Equatable {
 
     static let fadeInDuration: TimeInterval = 0.25
     static let fadeOutDuration: TimeInterval = 0.2
+}
+
+/// Which screen edge a toast scrim sits against.
+enum ToastScrimEdge {
+    case top
+    case bottom
+}
+
+/// How far a scrim reaches across the host, and how strongly it tints.
+enum ToastScrimLayout {
+
+    /// The height of the scrim on `edge`, measured from the edge itself.
+    ///
+    /// `capsuleFrames` are the stack's capsules in the host's space: the scrim
+    /// covers everything between the edge and the furthest one, plus `padding`
+    /// so the fade has room to read. With no capsule the scrim keeps `minimum`.
+    static func height(
+        edge: ToastScrimEdge,
+        hostHeight: CGFloat,
+        capsuleFrames: [CGRect],
+        padding: CGFloat,
+        minimum: CGFloat
+    ) -> CGFloat {
+        let natural: CGFloat
+        switch edge {
+        case .top:
+            guard let lowest = capsuleFrames.map(\.maxY).max() else {
+                return min(minimum, hostHeight)
+            }
+            natural = lowest + padding
+        case .bottom:
+            guard let highest = capsuleFrames.map(\.minY).min() else {
+                return min(minimum, hostHeight)
+            }
+            natural = hostHeight - highest + padding
+        }
+        return min(max(natural, minimum), hostHeight)
+    }
+
+    /// The scrim's strength: an error at the edge darkens it, so the failure
+    /// reads before its words do.
+    static func opacity(
+        for styles: [ToastStyle],
+        normal: CGFloat,
+        error: CGFloat
+    ) -> CGFloat {
+        styles.contains(.error) ? error : normal
+    }
 }

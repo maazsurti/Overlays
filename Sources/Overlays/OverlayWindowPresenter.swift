@@ -96,6 +96,18 @@ public final class OverlayWindowPresenter {
 final class OverlayHostViewController: UIViewController {
     private var content: UIView?
 
+    /// The status bar style the hosted content wants, or nil to leave it alone.
+    var statusBarStyleOverride: UIStatusBarStyle? {
+        didSet {
+            guard statusBarStyleOverride != oldValue else { return }
+            setNeedsStatusBarAppearanceUpdate()
+        }
+    }
+
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        statusBarStyleOverride ?? .default
+    }
+
     func setContent(_ content: UIView) {
         guard self.content !== content else { return }
         self.content?.removeFromSuperview()

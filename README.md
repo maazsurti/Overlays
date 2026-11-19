@@ -152,7 +152,10 @@ overlay appears.
 | `loadingCaption` | Second line of the loading card |
 | `isRightToLeft` | Direction for the overlay windows (UIKit) |
 | `locale`, `layoutDirection` | Direction and formatting for overlay content (SwiftUI) |
-| `toastScrimColor`, `toastScrimOpacity`, `toastScrimHeightFraction` | Gradient behind the bottom toasts |
+| `toastScrimColor`, `toastScrimOpacity`, `toastScrimErrorOpacity` | Gradient behind the toasts, and how strongly an error at an edge tints it |
+| `toastScrimPadding`, `toastScrimHeightFraction` | How far past the outermost capsule the scrim runs, and its shortest height |
+| `toastScrimBlurStyle`, `toastScrimStatusBarStyle` | The blur under the scrim (UIKit), and the status bar while a top scrim is up (UIKit) |
+| `toastHaptics` | A notification haptic when an error or warning toast arrives |
 | `makePrimaryButton` | Replaces the filled primary button in a modal alert |
 
 UIKit uses `UIColor` and `UIImage`; SwiftUI uses `Color` and `Image`.
@@ -271,9 +274,19 @@ OverlayWindowPresenter().present(myBanner, allowsPassthrough: { _ in true }) { b
 - **Drag.** Past 40pt in either direction, or a flick of 500pt/s, dismisses a toast. A shorter drag
   springs back, and only the toast under the finger moves. A UIKit pill keeps the size its message was
   fitted to for the whole gesture, so its text never re-wraps.
-- **Scrim.** The bottom toasts sit on `toastScrimColor`, at `toastScrimOpacity` on the screen's bottom
-  edge and clear at the top of `toastScrimHeightFraction` of the screen. It fades in with the first
-  bottom toast and out with the last, and never takes a touch. `toastScrimOpacity: 0` draws none.
+- **Scrim.** Each stack sits on `toastScrimColor`, at `toastScrimOpacity` on the screen edge it
+  meets and clear `toastScrimPadding` past the outermost capsule. Its shortest height is
+  `toastScrimHeightFraction` of the screen, and it follows the stack as a toast enters, leaves or
+  reflows. A scrim carrying an error uses `toastScrimErrorOpacity` instead, fading between the two.
+  It fades in with the first toast at its edge and out with the last, and never takes a touch.
+  `toastScrimOpacity: 0` draws none.
+- **Status bar.** While the top scrim is up, the toast window's root controller answers the status
+  bar with `toastScrimStatusBarStyle` and hands it back when the scrim leaves. `.default` opts out.
+- **Blur.** With `toastScrimBlurStyle` set, a blur masked by the same gradient sits under each scrim.
+  It takes no touch, is hidden while the scrim is off screen, and is skipped under Reduce
+  Transparency.
+- **Haptics.** With `toastHaptics`, an error toast fires `.error` and a warning toast `.warning`, once
+  per arrival, never for a re-render, and never for success or info.
 - **Reduce Motion.** Toasts cross-fade in place, the scrim appears without a fade, and the UIKit
   loading ring stops spinning.
 - **Right to left.** UIKit forces each overlay window's direction from `isRightToLeft`; SwiftUI sets

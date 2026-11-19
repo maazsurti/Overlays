@@ -39,16 +39,35 @@ public struct OverlayTheme {
 
     public var isRightToLeft: () -> Bool
 
-    /// The gradient the bottom toasts sit on, at its strongest on the screen's
-    /// bottom edge and clear at the top of its height.
+    /// The gradient the toasts sit on, at its strongest on the screen edge they
+    /// meet and clear at the other end of its height.
     public var toastScrimColor: UIColor
 
-    /// The scrim's opacity on the bottom edge. `0` draws no scrim at all.
+    /// The scrim's opacity on that edge, while the toasts there are not errors.
+    /// `0` draws no scrim at all.
     public var toastScrimOpacity: CGFloat
 
-    /// How tall the scrim is as a fraction of the screen — `0.25` for the lower
-    /// quarter.
+    /// The scrim's opacity when a toast at that edge is an error, so a failure
+    /// pulls the eye harder than good news.
+    public var toastScrimErrorOpacity: CGFloat
+
+    /// How far past the outermost capsule the scrim runs, so its fade reads as a
+    /// wash rather than a band.
+    public var toastScrimPadding: CGFloat
+
+    /// The scrim's shortest height as a fraction of the screen, used until a
+    /// toast at that edge gives it a height to cover.
     public var toastScrimHeightFraction: CGFloat
+
+    /// The blur under the scrim. Nil draws none.
+    public var toastScrimBlurStyle: UIBlurEffect.Style?
+
+    /// The status bar while a top scrim is on screen. `.default` leaves it to the
+    /// app.
+    public var toastScrimStatusBarStyle: UIStatusBarStyle
+
+    /// Whether an error or warning toast fires a notification haptic.
+    public var toastHaptics: Bool
 
     /// Builds the filled button for a `ModalAlert`'s primary role. Nil draws a filled accent button.
     public var makePrimaryButton: (@MainActor (_ title: String, _ action: @escaping @MainActor () -> Void) -> UIButton)?
@@ -77,7 +96,12 @@ public struct OverlayTheme {
         },
         toastScrimColor: UIColor = .black,
         toastScrimOpacity: CGFloat = 0.28,
+        toastScrimErrorOpacity: CGFloat = 0.6,
+        toastScrimPadding: CGFloat = 120,
         toastScrimHeightFraction: CGFloat = 0.25,
+        toastScrimBlurStyle: UIBlurEffect.Style? = nil,
+        toastScrimStatusBarStyle: UIStatusBarStyle = .lightContent,
+        toastHaptics: Bool = false,
         makePrimaryButton: (@MainActor (_ title: String, _ action: @escaping @MainActor () -> Void) -> UIButton)? = nil
     ) {
         self.accent = accent
@@ -101,7 +125,12 @@ public struct OverlayTheme {
         self.isRightToLeft = isRightToLeft
         self.toastScrimColor = toastScrimColor
         self.toastScrimOpacity = toastScrimOpacity
+        self.toastScrimErrorOpacity = toastScrimErrorOpacity
+        self.toastScrimPadding = toastScrimPadding
         self.toastScrimHeightFraction = toastScrimHeightFraction
+        self.toastScrimBlurStyle = toastScrimBlurStyle
+        self.toastScrimStatusBarStyle = toastScrimStatusBarStyle
+        self.toastHaptics = toastHaptics
         self.makePrimaryButton = makePrimaryButton
     }
 
