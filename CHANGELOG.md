@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.6
+
+- README rewritten around the package itself: what each overlay is, what it looks like, quick starts
+  for UIKit and SwiftUI, one reference section per overlay, and the behaviour notes last.
+- No code changes.
+
 ## 1.3.5
 
 - A bottom toast is placed against the clearance current when it is placed: the stack reads

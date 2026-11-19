@@ -1,73 +1,154 @@
 # Overlays
 
-Toasts, modal alerts and a blocking loading card for UIKit apps, each drawn in its own window
-above the app, so they show over sheets, covers and navigation without any screen owning them.
+Toasts, modal alerts and a loading card for iOS, in UIKit or SwiftUI.
 
-## Install
+Each overlay is drawn in a window of its own above the app, so it shows over a sheet, a full-screen
+cover or a pushed screen without any screen owning it. Nothing in your view hierarchy has to make
+room for it.
+
+## What you get
+
+- **Toasts** — four styles (`info`, `success`, `warning`, `error`) from the top or bottom edge. They
+  stack, dismiss themselves after five seconds, and swipe away in either direction.
+- **Modal alerts** — a dimmed backdrop and a card with an optional icon, title, message and one or
+  more buttons. Presets cover a one-button notice and a confirm/cancel.
+- **A loading card** — a dimmed screen with a spinner, a message and a caption, so a blocking wait
+  has one standard look.
+- **Custom overlays** — any `UIView` or SwiftUI view in the same slot, with the same window
+  behaviour.
+- **Your theme** — colours, type and icons set once at launch.
+- **Right-to-left** — each overlay window takes its direction from the theme.
+- **Reduce Motion** — toasts change in place without travelling, and the UIKit loading ring stops.
+- **VoiceOver** — the loading card is read as one element, its lines once.
+- **Cancellation errors** — an `.error` toast for a cancelled task is dropped instead of shown.
+
+## Requirements
+
+- iOS 17 or later.
+- Swift 6 tools, Swift 5 language mode.
+- Xcode 16 or later.
+
+## Installation
+
+In Xcode: **File ▸ Add Package Dependencies…**, paste
+`https://github.com/maazsurti/Overlays.git`, then add the product you need.
+
+Or in `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.3.5")
+.package(url: "https://github.com/maazsurti/Overlays.git", from: "1.3.6")
 ```
 
-## Products
+Products:
 
-- **`Overlays`** — UIKit. Everything below.
-- **`OverlaysSwiftUI`** — the same toasts, alerts and loading card for SwiftUI apps built on
-  `SimpleRouterSwiftUI`. Set `OverlayTheme.current` (SwiftUI `Color`/`Font`/`Image`, plus `locale`
-  and `layoutDirection` closures for RTL) and attach the hosts on your root view:
+- **`Overlays`** — UIKit, with no dependencies.
+- **`OverlaysSwiftUI`** — SwiftUI, for apps built on `SimpleRouterSwiftUI`. It pulls
+  `SimpleRouter` in for the `OverlayAdapter` attachment point.
 
-  ```swift
-  @State private var overlays = OverlayCenter.shared
+## Quick start — UIKit
 
-  RootContent()
-      .overlayAdapter($overlays.toastStore, adapter: ToastAdapter())
-      .overlayAdapter($overlays.overlay, adapter: CustomOverlayAdapter())
-  ```
-
-  Titles are `LocalizedStringKey`s, so they translate through your app's own string catalog.
-
-## Set up
-
-Attach once, after your main window exists, and give it your app's look:
+Attach once, after the main window exists:
 
 ```swift
 import Overlays
 
+OverlayCenter.shared.attach(to: windowScene)
+OverlayCenter.shared.showToast("Profile saved", style: .success)
+```
+
+Theme it first if you like. Every value has a system default, so `OverlayTheme()` works as-is:
+
+```swift
 OverlayTheme.current = OverlayTheme(
     accent: .brandYellow,
     surface: .white,
     text: .ink,
-    font: { weight, size in .appFont(weight, size) },
-    successIcon: UIImage(named: "check-circle"),
-    loadingGlyph: UIImage(named: "logo-mark"),
-    okTitle: String(localized: "OK"),
-    cancelTitle: String(localized: "Cancel"),
-    pleaseWaitText: String(localized: "Please wait"),
-    loadingCaption: String(localized: "Just a moment"),
-    isRightToLeft: { Locale.current.language.characterDirection == .rightToLeft },
-    toastScrimColor: .black,
-    toastScrimOpacity: 0.36,
-    toastScrimHeightFraction: 0.25
+    font: { weight, size in .appFont(weight, size) }
 )
-
-OverlayCenter.shared.attach(to: windowScene)
 ```
 
-Every value has a system default, so `OverlayTheme()` works as-is.
+## Quick start — SwiftUI
 
-## Use
+Set the theme, then attach the two hosts on your root view:
 
 ```swift
-// Toasts enter from their edge, stack, auto-dismiss, and swipe away either way.
+import SwiftUI
+import OverlaysSwiftUI
+
+@main
+struct MyApp: App {
+    @State private var overlays = OverlayCenter.shared
+
+    init() {
+        OverlayTheme.current = OverlayTheme(accent: .brandYellow, surface: .white, text: .ink)
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            RootView()
+                .overlayAdapter($overlays.toastStore, adapter: ToastAdapter())
+                .overlayAdapter($overlays.overlay, adapter: CustomOverlayAdapter())
+        }
+    }
+}
+```
+
+Then call the same methods from anywhere:
+
+```swift
 OverlayCenter.shared.showToast("Profile saved", style: .success)
-OverlayCenter.shared.showToast("Please enter your email", style: .warning, placement: .bottom)
+```
 
-// A blocking loading card: dimmed screen, a spinning accent ring around the glyph,
-// a message over a caption. Omit the caption to draw the theme's.
-OverlayCenter.shared.showLoading(message: "Saving…", caption: "Just a moment")
-defer { OverlayCenter.shared.dismissLoading() }
+Alert titles are `LocalizedStringKey`s, so they translate through your app's own string catalog.
+Toast messages are plain `String`s.
 
-// Modal alerts for questions that need an answer.
+## Theming
+
+`OverlayTheme.current` is read when an overlay is built, so set it once at launch, before the first
+overlay appears.
+
+| Property | Purpose |
+| --- | --- |
+| `accent`, `onAccent` | Brand colour and the content drawn on it |
+| `surface`, `text`, `secondaryText`, `border` | Card and pill colours |
+| `success`, `danger` | Glyph tints for the semantic styles |
+| `font` | `(OverlayFontWeight, CGFloat) -> UIFont` (UIKit) or `-> Font` (SwiftUI) |
+| `successIcon`, `errorIcon`, `warningIcon`, `infoIcon` | Toast and alert glyphs |
+| `okTitle`, `cancelTitle` | Default button titles (UIKit) |
+| `pleaseWaitText` | VoiceOver label for a loading card with no text (UIKit) |
+| `loadingCaption` | Second line of the loading card |
+| `isRightToLeft` | Direction for the overlay windows (UIKit) |
+| `locale`, `layoutDirection` | Direction and formatting for overlay content (SwiftUI) |
+| `toastScrimColor`, `toastScrimOpacity`, `toastScrimHeightFraction` | Gradient behind the bottom toasts |
+| `makePrimaryButton` | Replaces the filled primary button in a modal alert |
+
+UIKit uses `UIColor` and `UIImage`; SwiftUI uses `Color` and `Image`.
+
+## Toasts
+
+```swift
+OverlayCenter.shared.showToast(_ message: String,
+                               style: ToastStyle = .info,
+                               placement: ToastPlacement = .top,
+                               duration: TimeInterval = 5)
+
+OverlayCenter.shared.dismissToasts()
+```
+
+- `style` picks the glyph and tint: `.info`, `.success`, `.warning`, `.error`.
+- `placement` is `.top` or `.bottom`.
+- `duration` is seconds on screen. `0` keeps the toast until it is dragged away or dismissed.
+- Three toasts show per edge; a fourth pushes the oldest out.
+- A toast is dropped instead of shown when it is `.error` and its message is a cancellation:
+  `Cancelled`, `Canceled`, `CancellationError`, or `NSURLErrorDomain` with code `-999`.
+
+A bottom toast clears your own bottom bar by the height you publish to
+`toastStore.bottomChromeInset`; see [Behaviour](#behaviour). The SwiftUI `ToastStore` is public, so
+you can also drive a stack yourself with `show(_:)`, `dismiss(_:)` and `dismissAll()`.
+
+## Alerts
+
+```swift
 OverlayCenter.shared.showModalAlert(.confirm(
     icon: .warning,
     title: "Delete this item?",
@@ -76,46 +157,92 @@ OverlayCenter.shared.showModalAlert(.confirm(
     onConfirm: { delete() }
 ))
 
-// Any view of your own in the same overlay slot.
+OverlayCenter.shared.showModalAlert(.notice(
+    icon: .success,
+    title: "Password changed",
+    message: "Use your new password next time you log in.",
+    buttonTitle: "OK"
+))
+```
+
+`ModalAlert` has an optional `icon` (`.success`, `.error`, `.warning`, `.info`, or
+`.custom(systemName:tint:)`), a `title`, an optional `message`, and a list of `ModalAlertButton`s with
+a `.primary`, `.cancel` or `.destructive` role. A button runs its action, then the alert dismisses.
+`dismissModalAlert()` closes it without a choice.
+
+## Loading
+
+```swift
+OverlayCenter.shared.showLoading(message: "Saving…", caption: "Just a moment")
+defer { OverlayCenter.shared.dismissLoading() }
+```
+
+`message` and `caption` are both optional. Omit the caption to draw the theme's `loadingCaption`; pass
+`""` to show the message alone. In UIKit the card takes no touches and blocks the app until
+`dismissLoading()`. In SwiftUI the card covers the screen and a tap dismisses it.
+
+UIKit draws the themed card: a ring around `loadingGlyph`, a message and a caption. SwiftUI draws a
+system `ProgressView` on a dark card.
+
+## Custom overlays
+
+```swift
 OverlayCenter.shared.showOverlay { dismiss in
     MyPromoCard(onClose: dismiss)
 }
+
+OverlayCenter.shared.dismissOverlay()
 ```
 
-`OverlayWindowPresenter` is public too, for a permanent banner of your own above the app (pass
-`allowsPassthrough: true` to let touches through around it).
+The content is a `UIView` in UIKit and any view in SwiftUI. It receives the `dismiss` closure that
+clears the slot. There is one slot: showing a second overlay replaces the first.
 
-### Behaviour
+`allowsPassthrough: true` makes the whole overlay window inert, so every touch reaches the app below.
+It is all or nothing — the window does not forward only the touches outside your content.
 
-- Toasts: four styles (`info`, `success`, `warning`, `error`), top or bottom placement, and a
-  five-second life of their own. A toast enters from its edge and leaves back towards the same
-  one. An arrival or departure moves the whole stack in one spring, so the survivors slide to
-  their new slots in the same frame.
-- A top toast sits 28pt under the safe area. A bottom toast sits 12pt above the chrome that holds
-  the bottom of the screen: the keyboard while it is up, otherwise the value written to
-  `toastStore.bottomChromeInset` — the height your own bar reaches above the bottom safe area, `0`
-  when it is out of the way. A container that dips into the safe area publishes only the part that
-  stands proud of it, so the toast keeps the same 12pt gap over the bar and over the safe area
-  alone. A toast is placed against the inset current at that moment; writing a new inset moves the
-  toasts already on screen to the new gap.
-- The bottom toasts sit on a scrim: the theme's `toastScrimColor`, at `toastScrimOpacity` on the
-  screen's bottom edge and clear at the top of `toastScrimHeightFraction` of the screen. It fades
-  in with the first bottom toast and out with the last, stays put while they swap, and never takes
-  a touch. Reduce Motion shows and hides it without a fade. `toastScrimOpacity: 0` draws none.
-- A stack overlaps in depth: the toast nearest the edge is full size, and each one behind it is a
-  little smaller and tucked under its neighbour.
-- Drag a toast either way to dismiss it: past 40pt, or with a flick. A short drag springs back,
-  and only the toast under the finger moves. A pill keeps the size its message was fitted to for
-  the whole gesture, wherever it travels, so its text never re-wraps. Only the capsules take
-  touches.
-- Reduce Motion: toasts cross-fade in place, and nothing travels.
-- Cancellation errors (`Cancelled`, `CancellationError`, `NSURLErrorDomain -999`) are dropped
-  instead of shown.
-- Loading card: a ring, its glyph, a message and a caption, on one card that takes the height
-  of the lines it shows. It cannot be tapped away; it goes when you dismiss it. Reduce Motion
-  stops the spin. VoiceOver reads the card as one element, its lines once.
-- Overlays follow `isRightToLeft` for their layout direction.
+## OverlayWindowPresenter
 
-## Requirements
+Toasts and custom overlays are presented by `OverlayWindowPresenter`, which is public for an overlay
+of your own that lives outside `OverlayCenter` — a permanent banner, a ribbon, a debug panel.
 
-iOS 17+, Swift 6 tools (Swift 5 language mode).
+```swift
+let presenter = OverlayWindowPresenter()
+presenter.attach(to: windowScene)
+presenter.present(myBanner, allowsPassthrough: true)
+presenter.dismiss()
+```
+
+The window sits at level 50: above the app's own window, where sheets and covers live, and below the
+keyboard window. The first present fades the window in; `dismiss()` fades it out and tears it down.
+
+The SwiftUI product has its own `OverlayWindowPresenter` that takes the overlay state and finds the
+active window scene for you:
+
+```swift
+OverlayWindowPresenter().present(myBanner, allowsPassthrough: { _ in true }) { banner in
+    BannerView(banner: banner)
+}
+```
+
+## Behaviour
+
+- **Placement.** A top toast sits 28pt below the top safe area. A bottom toast sits 12pt above
+  whatever holds the bottom of the screen: the keyboard while it is up, otherwise the bottom safe area
+  plus `toastStore.bottomChromeInset`.
+- **Bottom chrome.** `bottomChromeInset` is the height of your own bar above the bottom safe area, and
+  `0` when it is out of the way. A bar that dips into the safe area publishes only the part that stands
+  proud of it, so the gap stays 12pt over the bar and over the safe area alone. Writing a new inset
+  moves the toasts already on screen.
+- **Stack.** In UIKit the toast nearest the edge is full size, and each one behind sits 4% smaller and
+  14pt further out. An arrival or departure moves the whole stack in one spring.
+- **Drag.** Past 40pt in either direction, or a flick of 500pt/s, dismisses a toast. A shorter drag
+  springs back, and only the toast under the finger moves. A UIKit pill keeps the size its message was
+  fitted to for the whole gesture, so its text never re-wraps.
+- **Scrim.** The bottom toasts sit on `toastScrimColor`, at `toastScrimOpacity` on the screen's bottom
+  edge and clear at the top of `toastScrimHeightFraction` of the screen. It fades in with the first
+  bottom toast and out with the last, and never takes a touch. `toastScrimOpacity: 0` draws none.
+- **Reduce Motion.** Toasts cross-fade in place, the scrim appears without a fade, and the UIKit
+  loading ring stops spinning.
+- **Right to left.** UIKit forces each overlay window's direction from `isRightToLeft`; SwiftUI sets
+  the overlay's `locale` and `layoutDirection` from the theme.
+- **VoiceOver.** The loading card is one element and its lines are read once.
