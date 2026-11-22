@@ -126,6 +126,9 @@ public struct OverlayTheme {
     /// Whether the pill draws a grabber capsule in its top padding.
     public var toastShowsGrabber: Bool
 
+    /// The grabber's colour. Nil keeps white at 25%.
+    public var toastGrabberColor: UIColor?
+
     /// Colours per toast style, over the theme's own toast colours.
     public var toastColours: [ToastStyle: ToastColours]
 
@@ -192,6 +195,7 @@ public struct OverlayTheme {
         toastContentInsets: UIEdgeInsets? = nil,
         toastTextLeadingInset: CGFloat = 16,
         toastShowsGrabber: Bool = false,
+        toastGrabberColor: UIColor? = nil,
         toastColours: [ToastStyle: ToastColours] = [:],
         toastLineBreakStrategy: NSParagraphStyle.LineBreakStrategy = [],
         toastGlyphTint: UIColor? = nil,
@@ -242,6 +246,7 @@ public struct OverlayTheme {
         self.toastContentInsets = toastContentInsets
         self.toastTextLeadingInset = toastTextLeadingInset
         self.toastShowsGrabber = toastShowsGrabber
+        self.toastGrabberColor = toastGrabberColor
         self.toastColours = toastColours
         self.toastLineBreakStrategy = toastLineBreakStrategy
         self.toastGlyphTint = toastGlyphTint

@@ -142,7 +142,7 @@ final class ToastCapsule: UIView {
 
         if theme.toastShowsGrabber {
             let grabber = UIView()
-            grabber.backgroundColor = UIColor.white.withAlphaComponent(0.25)
+            grabber.backgroundColor = theme.toastGrabberColor ?? UIColor.white.withAlphaComponent(0.25)
             grabber.layer.cornerRadius = 2
             addSubviews(grabber)
             NSLayoutConstraint.activate([
