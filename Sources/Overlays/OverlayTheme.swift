@@ -8,6 +8,20 @@ public enum OverlayFontWeight: Sendable {
 
 /// The colours, type, icons and copy every overlay draws with. Set `OverlayTheme.current` once at
 /// launch, before the first overlay is shown.
+/// A toast style's own colours. Any field left out falls back to the theme's
+/// toast defaults.
+public struct ToastColours: Sendable {
+    public var surface: UIColor?
+    public var border: UIColor?
+    public var text: UIColor?
+
+    public init(surface: UIColor? = nil, border: UIColor? = nil, text: UIColor? = nil) {
+        self.surface = surface
+        self.border = border
+        self.text = text
+    }
+}
+
 public struct OverlayTheme {
     public var accent: UIColor
     public var onAccent: UIColor
@@ -112,6 +126,12 @@ public struct OverlayTheme {
     /// Whether the pill draws a grabber capsule in its top padding.
     public var toastShowsGrabber: Bool
 
+    /// Colours per toast style, over the theme's own toast colours.
+    public var toastColours: [ToastStyle: ToastColours]
+
+    /// The message's line break strategy.
+    public var toastLineBreakStrategy: NSParagraphStyle.LineBreakStrategy
+
     /// The glyph's ink and the circle behind it. Nil keeps the style's tint.
     public var toastGlyphTint: UIColor?
     public var toastGlyphFill: UIColor?
@@ -172,6 +192,8 @@ public struct OverlayTheme {
         toastContentInsets: UIEdgeInsets? = nil,
         toastTextLeadingInset: CGFloat = 16,
         toastShowsGrabber: Bool = false,
+        toastColours: [ToastStyle: ToastColours] = [:],
+        toastLineBreakStrategy: NSParagraphStyle.LineBreakStrategy = [],
         toastGlyphTint: UIColor? = nil,
         toastGlyphFill: UIColor? = nil,
         toastGlyphAlignsToFirstLine: Bool = false,
@@ -220,6 +242,8 @@ public struct OverlayTheme {
         self.toastContentInsets = toastContentInsets
         self.toastTextLeadingInset = toastTextLeadingInset
         self.toastShowsGrabber = toastShowsGrabber
+        self.toastColours = toastColours
+        self.toastLineBreakStrategy = toastLineBreakStrategy
         self.toastGlyphTint = toastGlyphTint
         self.toastGlyphFill = toastGlyphFill
         self.toastGlyphAlignsToFirstLine = toastGlyphAlignsToFirstLine

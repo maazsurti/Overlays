@@ -69,13 +69,15 @@ final class ToastCapsule: UIView {
         self.messageLabel = UILabel()
         super.init(frame: .zero)
 
+        let colours = theme.toastColours[toast.style]
         let font = theme.font(theme.toastFontWeight, theme.toastFontSize)
         let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakStrategy = theme.toastLineBreakStrategy
         paragraph.lineHeightMultiple = theme.toastLineHeightMultiple
         paragraph.alignment = theme.isRightToLeft() ? .right : .left
         var attributes: [NSAttributedString.Key: Any] = [
             .font: font,
-            .foregroundColor: theme.toastTextColor ?? theme.text,
+            .foregroundColor: colours?.text ?? theme.toastTextColor ?? theme.text,
             .paragraphStyle: paragraph,
         ]
         if let lineHeight = theme.toastLineHeight {
@@ -94,10 +96,10 @@ final class ToastCapsule: UIView {
             attributes: attributes
         )
 
-        backgroundColor = theme.toastSurface ?? theme.surface
+        backgroundColor = colours?.surface ?? theme.toastSurface ?? theme.surface
         layer.cornerRadius = theme.toastCornerRadius
         layer.borderWidth = theme.toastBorderWidth
-        layer.borderColor = (theme.toastBorderColor ?? theme.border).cgColor
+        layer.borderColor = (colours?.border ?? theme.toastBorderColor ?? theme.border).cgColor
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowOpacity = 0.18
         layer.shadowRadius = 14
