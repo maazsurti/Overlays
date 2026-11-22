@@ -109,6 +109,16 @@ public struct OverlayTheme {
     /// insets' leading value.
     public var toastTextLeadingInset: CGFloat
 
+    /// Whether the pill draws a grabber capsule in its top padding.
+    public var toastShowsGrabber: Bool
+
+    /// The glyph's ink and the circle behind it. Nil keeps the style's tint.
+    public var toastGlyphTint: UIColor?
+    public var toastGlyphFill: UIColor?
+
+    /// Whether the glyph sits with the first line instead of centred on both.
+    public var toastGlyphAlignsToFirstLine: Bool
+
     /// Space between the style's glyph and the message.
     public var toastGlyphSpacing: CGFloat
 
@@ -161,6 +171,10 @@ public struct OverlayTheme {
         toastLineHeight: CGFloat? = nil,
         toastContentInsets: UIEdgeInsets? = nil,
         toastTextLeadingInset: CGFloat = 16,
+        toastShowsGrabber: Bool = false,
+        toastGlyphTint: UIColor? = nil,
+        toastGlyphFill: UIColor? = nil,
+        toastGlyphAlignsToFirstLine: Bool = false,
         toastGlyphSpacing: CGFloat = 12,
         toastFontSize: CGFloat = 16,
         toastFontWeight: OverlayFontWeight = .semibold,
@@ -205,6 +219,10 @@ public struct OverlayTheme {
         self.toastLineHeight = toastLineHeight
         self.toastContentInsets = toastContentInsets
         self.toastTextLeadingInset = toastTextLeadingInset
+        self.toastShowsGrabber = toastShowsGrabber
+        self.toastGlyphTint = toastGlyphTint
+        self.toastGlyphFill = toastGlyphFill
+        self.toastGlyphAlignsToFirstLine = toastGlyphAlignsToFirstLine
         self.toastGlyphSpacing = toastGlyphSpacing
         self.toastFontSize = toastFontSize
         self.toastFontWeight = toastFontWeight

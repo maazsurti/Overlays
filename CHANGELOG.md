@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.12
+
+- A toast sizes to its full attributed text: `fittingSize` measures the attributed string, so a fixed
+  line height or a baseline offset can no longer clip the last line. New test covers it.
+- `toastShowsGrabber` draws a 36×4 grabber 10pt from the pill's top edge, white at 25%. Default
+  `false`.
+- `toastGlyphTint`, `toastGlyphFill` and `toastGlyphAlignsToFirstLine` style the leading glyph.
+  Defaults keep the style's tint, its 14% fill and centre alignment.
+
 ## 1.3.11
 
 - `toastLineHeight` sets the message's line height in points, with the glyphs centred in each line;

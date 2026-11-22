@@ -114,7 +114,7 @@ final class ToastCapsule: UIView {
         if theme.toastShowsGlyph {
             content = UIStackView.horizontal(
                 spacing: theme.toastGlyphSpacing,
-                alignment: .center,
+                alignment: theme.toastGlyphAlignsToFirstLine ? .top : .center,
                 views: [glyph, messageLabel]
             )
         } else {
@@ -133,6 +133,19 @@ final class ToastCapsule: UIView {
             content.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
         ])
 
+        if theme.toastShowsGrabber {
+            let grabber = UIView()
+            grabber.backgroundColor = UIColor.white.withAlphaComponent(0.25)
+            grabber.layer.cornerRadius = 2
+            addSubviews(grabber)
+            NSLayoutConstraint.activate([
+                grabber.widthAnchor.constraint(equalToConstant: 36),
+                grabber.heightAnchor.constraint(equalToConstant: 4),
+                grabber.centerXAnchor.constraint(equalTo: centerXAnchor),
+                grabber.topAnchor.constraint(equalTo: topAnchor, constant: 10),
+            ])
+        }
+
         addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(handlePan)))
     }
 
@@ -146,13 +159,19 @@ final class ToastCapsule: UIView {
     /// the stack assigns it to `bounds` and nothing else can resize it.
     func fittingSize(maxWidth: CGFloat) -> CGSize {
         let contentWidth = max(0, maxWidth - Self.messageInset)
-        let text = messageLabel.sizeThatFits(
+        // The label's own fit ignores a paragraph style's fixed line height, so
+        // the text is measured from its attributed string, line boxes included.
+        let text = messageLabel.attributedText?.boundingRect(
+            with: CGSize(width: contentWidth, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            context: nil
+        ).size ?? messageLabel.sizeThatFits(
             CGSize(width: contentWidth, height: .greatestFiniteMagnitude)
         )
         let width = OverlayTheme.current.toastFillsWidth
             ? maxWidth
             : min(maxWidth, Self.messageInset + ceil(text.width))
-        let height = max(Self.minimumHeight, ceil(text.height) + 2 * Self.verticalMargin)
+        let height = max(Self.minimumHeight, ceil(text.height) + Self.insets.top + Self.insets.bottom)
         return CGSize(width: ceil(width), height: ceil(height))
     }
 
@@ -186,11 +205,11 @@ private final class ToastGlyphView: UIView {
     init(style: ToastStyle) {
         super.init(frame: .zero)
 
-        backgroundColor = style.tint.withAlphaComponent(0.14)
+        backgroundColor = OverlayTheme.current.toastGlyphFill ?? style.tint.withAlphaComponent(0.14)
         layer.cornerRadius = 14
 
         let glyph = UIImageView(image: style.image)
-        glyph.tintColor = style.tint
+        glyph.tintColor = OverlayTheme.current.toastGlyphTint ?? style.tint
         glyph.contentMode = .scaleAspectFit
 
         addSubviews(glyph)
