@@ -80,10 +80,10 @@ final class ToastCapsule: UIView {
             .foregroundColor: colours?.text ?? theme.toastTextColor ?? theme.text,
             .paragraphStyle: paragraph,
         ]
-        if let lineHeight = theme.toastLineHeight {
-            paragraph.minimumLineHeight = lineHeight
-            paragraph.maximumLineHeight = lineHeight
-            attributes[.baselineOffset] = (lineHeight - font.lineHeight) / 4
+        if let lineHeight = theme.toastLineHeight, font.lineHeight > 0 {
+            // Scale the font's own leading to the requested pitch: a fixed
+            // minimum/maximum height clips the last line on iOS.
+            paragraph.lineHeightMultiple = lineHeight / font.lineHeight
         }
         messageLabel.numberOfLines = 0
         messageLabel.lineBreakMode = .byWordWrapping
