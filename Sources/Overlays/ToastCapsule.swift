@@ -84,6 +84,11 @@ final class ToastCapsule: UIView {
             attributes[.baselineOffset] = (lineHeight - font.lineHeight) / 4
         }
         messageLabel.numberOfLines = 0
+        messageLabel.lineBreakMode = .byWordWrapping
+        // The pill's width is decided by the text; the label must then wrap inside
+        // it rather than hold its own single-line width and clip.
+        messageLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        messageLabel.setContentCompressionResistancePriority(.required, for: .vertical)
         messageLabel.attributedText = NSAttributedString(
             string: toast.message,
             attributes: attributes
