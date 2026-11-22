@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.13
+
+- A multi-line message with a glyph keeps every line: the label learns its wrap width before it
+  measures, so the pill no longer sizes and lays out one line of a two-line message.
+- New test covers a two-line message with a glyph.
+
 ## 1.3.12
 
 - A toast sizes to its full attributed text: `fittingSize` measures the attributed string, so a fixed

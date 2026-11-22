@@ -37,6 +37,27 @@ struct ToastCapsuleTests {
         #expect(size.height <= 2 * 22.5 + 24 + 6)
     }
 
+    @Test func aTwoLineToastWithAGlyphKeepsBothLines() {
+        let previous = OverlayTheme.current
+        defer { OverlayTheme.current = previous }
+        OverlayTheme.current = OverlayTheme(
+            toastShowsGlyph: true,
+            toastHorizontalMargin: 16,
+            toastFillsWidth: true,
+            toastLineHeightMultiple: 1.25,
+            toastContentInsets: UIEdgeInsets(top: 20, left: 16, bottom: 15, right: 16),
+            toastGlyphTint: .white,
+            toastFontSize: 15,
+            toastFontWeight: .regular
+        )
+        let capsule = ToastCapsule(toast: Toast(message: String(repeating: "wrapped message ", count: 3))) {}
+
+        let size = capsule.fittingSize(maxWidth: 362)
+
+        #expect(size.width == 362)
+        #expect(size.height >= 2 * 22.5 + 35 - 3)
+    }
+
     @Test func aLongToastWrapsInsideTheWidth() {
         let capsule = ToastCapsule(toast: Toast(message: String(repeating: "long message ", count: 12))) {}
 

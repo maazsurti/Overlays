@@ -164,6 +164,8 @@ final class ToastCapsule: UIView {
     /// the stack assigns it to `bounds` and nothing else can resize it.
     func fittingSize(maxWidth: CGFloat) -> CGSize {
         let contentWidth = max(0, maxWidth - Self.messageInset)
+        // A multi-line label reports one line until it knows the width it wraps in.
+        messageLabel.preferredMaxLayoutWidth = contentWidth
         // The label's own fit ignores a paragraph style's fixed line height, so
         // the text is measured from its attributed string, line boxes included.
         let text = messageLabel.attributedText?.boundingRect(
