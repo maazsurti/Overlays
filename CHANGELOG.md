@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.11
+
+- `toastLineHeight` sets the message's line height in points, with the glyphs centred in each line;
+  `toastLineHeightMultiple` still scales the font's natural line height when it is nil.
+- `toastContentInsets` sets the pill's content insets, and `toastTextLeadingInset` the leading edge
+  when no glyph is drawn. Both default to the previous values.
+- `toastGlyphSpacing` sets the space between the glyph and the message. Default 12.
+
 ## 1.3.10
 
 - `toastHorizontalMargin` sets the pill's margin from each screen edge, replacing the fixed 16pt.

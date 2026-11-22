@@ -23,24 +23,43 @@ final class ToastCapsule: UIView {
     var dragDismissDirection: CGFloat?
 
     private static let glyphSize: CGFloat = 28
-    private static let contentSpacing: CGFloat = 12
+
+    /// The pill's own margins, whatever the theme leaves unset.
     private static let leadingMargin: CGFloat = 8
-    private static let textLeadingMargin: CGFloat = 16
     private static let trailingMargin: CGFloat = 16
     private static let verticalMargin: CGFloat = 10
+
+    /// The pill's insets around its content.
+    private static var insets: UIEdgeInsets {
+        let theme = OverlayTheme.current
+        let base = theme.toastContentInsets
+            ?? UIEdgeInsets(
+                top: verticalMargin,
+                left: leadingMargin,
+                bottom: verticalMargin,
+                right: trailingMargin
+            )
+        guard !theme.toastShowsGlyph else { return base }
+        return UIEdgeInsets(
+            top: base.top,
+            left: theme.toastTextLeadingInset,
+            bottom: base.bottom,
+            right: base.right
+        )
+    }
 
     /// The glyph, its spacing and the pill's margins either side of the message.
     private static var messageInset: CGFloat {
         guard OverlayTheme.current.toastShowsGlyph else {
-            return textLeadingMargin + trailingMargin
+            return insets.left + insets.right
         }
-        return leadingMargin + glyphSize + contentSpacing + trailingMargin
+        return insets.left + glyphSize + OverlayTheme.current.toastGlyphSpacing + insets.right
     }
 
     /// The glyph's height plus the pill's vertical margins.
     private static var minimumHeight: CGFloat {
-        guard OverlayTheme.current.toastShowsGlyph else { return 2 * verticalMargin }
-        return glyphSize + 2 * verticalMargin
+        guard OverlayTheme.current.toastShowsGlyph else { return insets.top + insets.bottom }
+        return glyphSize + insets.top + insets.bottom
     }
 
     init(toast: Toast, onDismiss: @escaping () -> Void) {
@@ -50,17 +69,24 @@ final class ToastCapsule: UIView {
         self.messageLabel = UILabel()
         super.init(frame: .zero)
 
+        let font = theme.font(theme.toastFontWeight, theme.toastFontSize)
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineHeightMultiple = theme.toastLineHeightMultiple
         paragraph.alignment = theme.isRightToLeft() ? .right : .left
+        var attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: theme.toastTextColor ?? theme.text,
+            .paragraphStyle: paragraph,
+        ]
+        if let lineHeight = theme.toastLineHeight {
+            paragraph.minimumLineHeight = lineHeight
+            paragraph.maximumLineHeight = lineHeight
+            attributes[.baselineOffset] = (lineHeight - font.lineHeight) / 4
+        }
         messageLabel.numberOfLines = 0
         messageLabel.attributedText = NSAttributedString(
             string: toast.message,
-            attributes: [
-                .font: theme.font(theme.toastFontWeight, theme.toastFontSize),
-                .foregroundColor: theme.toastTextColor ?? theme.text,
-                .paragraphStyle: paragraph,
-            ]
+            attributes: attributes
         )
 
         backgroundColor = theme.toastSurface ?? theme.surface
@@ -71,11 +97,12 @@ final class ToastCapsule: UIView {
         layer.shadowOpacity = 0.18
         layer.shadowRadius = 14
         layer.shadowOffset = CGSize(width: 0, height: 8)
+        let insets = Self.insets
         directionalLayoutMargins = NSDirectionalEdgeInsets(
-            top: Self.verticalMargin,
-            leading: theme.toastShowsGlyph ? Self.leadingMargin : Self.textLeadingMargin,
-            bottom: Self.verticalMargin,
-            trailing: Self.trailingMargin
+            top: insets.top,
+            leading: insets.left,
+            bottom: insets.bottom,
+            trailing: insets.right
         )
         // A drag carries the pill over the safe-area insets, which would add
         // them to its margins and squeeze the message to fewer lines. The pill
@@ -86,7 +113,7 @@ final class ToastCapsule: UIView {
         let content: UIStackView
         if theme.toastShowsGlyph {
             content = UIStackView.horizontal(
-                spacing: Self.contentSpacing,
+                spacing: theme.toastGlyphSpacing,
                 alignment: .center,
                 views: [glyph, messageLabel]
             )

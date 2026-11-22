@@ -94,8 +94,23 @@ public struct OverlayTheme {
     /// message.
     public var toastFillsWidth: Bool
 
-    /// The message's line height, as a multiple of its size.
+    /// The message's line height, as a multiple of its natural line height.
     public var toastLineHeightMultiple: CGFloat
+
+    /// The message's fixed line height in points. Nil keeps the font's own line
+    /// height times ``toastLineHeightMultiple``.
+    public var toastLineHeight: CGFloat?
+
+    /// The pill's insets around its content. The glyph keeps a tighter leading
+    /// edge through ``toastGlyphLeadingInset``.
+    public var toastContentInsets: UIEdgeInsets?
+
+    /// The pill's leading inset when it draws no glyph, in place of the content
+    /// insets' leading value.
+    public var toastTextLeadingInset: CGFloat
+
+    /// Space between the style's glyph and the message.
+    public var toastGlyphSpacing: CGFloat
 
     /// The toast message's size and weight.
     public var toastFontSize: CGFloat
@@ -143,6 +158,10 @@ public struct OverlayTheme {
         toastHorizontalMargin: CGFloat = 16,
         toastFillsWidth: Bool = false,
         toastLineHeightMultiple: CGFloat = 1,
+        toastLineHeight: CGFloat? = nil,
+        toastContentInsets: UIEdgeInsets? = nil,
+        toastTextLeadingInset: CGFloat = 16,
+        toastGlyphSpacing: CGFloat = 12,
         toastFontSize: CGFloat = 16,
         toastFontWeight: OverlayFontWeight = .semibold,
         makePrimaryButton: (@MainActor (_ title: String, _ action: @escaping @MainActor () -> Void) -> UIButton)? = nil
@@ -183,6 +202,10 @@ public struct OverlayTheme {
         self.toastHorizontalMargin = toastHorizontalMargin
         self.toastFillsWidth = toastFillsWidth
         self.toastLineHeightMultiple = toastLineHeightMultiple
+        self.toastLineHeight = toastLineHeight
+        self.toastContentInsets = toastContentInsets
+        self.toastTextLeadingInset = toastTextLeadingInset
+        self.toastGlyphSpacing = toastGlyphSpacing
         self.toastFontSize = toastFontSize
         self.toastFontWeight = toastFontWeight
         self.makePrimaryButton = makePrimaryButton
