@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.9
+
+- The toast pill's chrome moves to `OverlayTheme`: `toastSurface`, `toastTextColor`,
+  `toastBorderColor`, `toastBorderWidth`, `toastCornerRadius`, `toastShowsGlyph`, `toastFontSize`
+  and `toastFontWeight`. Every default keeps the white pill at 16pt.
+- With `toastShowsGlyph` off, the pill drops the tinted circle and narrows to a 16pt text inset, so
+  a theme can draw a plain message pill.
+
 ## 1.3.8
 
 - Top toasts get the scrim the bottom ones had: `ToastScrimView` takes an edge, and the toast host

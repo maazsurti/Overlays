@@ -25,41 +25,47 @@ final class ToastCapsule: UIView {
     private static let glyphSize: CGFloat = 28
     private static let contentSpacing: CGFloat = 12
     private static let leadingMargin: CGFloat = 8
+    private static let textLeadingMargin: CGFloat = 16
     private static let trailingMargin: CGFloat = 16
     private static let verticalMargin: CGFloat = 10
 
     /// The glyph, its spacing and the pill's margins either side of the message.
     private static var messageInset: CGFloat {
-        leadingMargin + glyphSize + contentSpacing + trailingMargin
+        guard OverlayTheme.current.toastShowsGlyph else {
+            return textLeadingMargin + trailingMargin
+        }
+        return leadingMargin + glyphSize + contentSpacing + trailingMargin
     }
 
     /// The glyph's height plus the pill's vertical margins.
     private static var minimumHeight: CGFloat {
-        glyphSize + 2 * verticalMargin
+        guard OverlayTheme.current.toastShowsGlyph else { return 2 * verticalMargin }
+        return glyphSize + 2 * verticalMargin
     }
 
     init(toast: Toast, onDismiss: @escaping () -> Void) {
+        let theme = OverlayTheme.current
         self.id = toast.id
         self.onDismiss = onDismiss
         self.messageLabel = UILabel(
             text: toast.message,
-            font: OverlayTheme.current.font(.semibold, 16),
-            color: OverlayTheme.current.text,
+            font: theme.font(theme.toastFontWeight, theme.toastFontSize),
+            color: theme.toastTextColor ?? theme.text,
             numberOfLines: 0
         )
         super.init(frame: .zero)
 
-        backgroundColor = OverlayTheme.current.surface
-        layer.cornerRadius = 16
-        layer.borderWidth = 0.5
-        layer.borderColor = OverlayTheme.current.border.cgColor
+        backgroundColor = theme.toastSurface ?? theme.surface
+        layer.cornerRadius = theme.toastCornerRadius
+        layer.borderWidth = theme.toastBorderWidth
+        layer.borderColor = (theme.toastBorderColor ?? theme.border).cgColor
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowOpacity = 0.18
         layer.shadowRadius = 14
         layer.shadowOffset = CGSize(width: 0, height: 8)
         directionalLayoutMargins = NSDirectionalEdgeInsets(
             top: Self.verticalMargin,
-            leading: Self.leadingMargin,
+            leading: theme.toastShowsGlyph ? Self.leadingMargin : Self.textLeadingMargin,
             bottom: Self.verticalMargin,
             trailing: Self.trailingMargin
         )
@@ -69,11 +75,19 @@ final class ToastCapsule: UIView {
         insetsLayoutMarginsFromSafeArea = false
 
         let glyph = ToastGlyphView(style: toast.style)
-        let content = UIStackView.horizontal(
-            spacing: Self.contentSpacing,
-            alignment: .center,
-            views: [glyph, messageLabel]
-        )
+        let content: UIStackView
+        if theme.toastShowsGlyph {
+            content = UIStackView.horizontal(
+                spacing: Self.contentSpacing,
+                alignment: .center,
+                views: [glyph, messageLabel]
+            )
+        } else {
+            content = UIStackView.horizontal(
+                alignment: .center,
+                views: [messageLabel]
+            )
+        }
         content.isUserInteractionEnabled = false
 
         addSubviews(content)

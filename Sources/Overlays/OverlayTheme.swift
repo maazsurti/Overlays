@@ -69,6 +69,28 @@ public struct OverlayTheme {
     /// Whether an error or warning toast fires a notification haptic.
     public var toastHaptics: Bool
 
+    /// The toast pill's fill. Nil uses ``surface``.
+    public var toastSurface: UIColor?
+
+    /// The toast message's colour. Nil uses ``text``.
+    public var toastTextColor: UIColor?
+
+    /// The toast pill's border. Nil uses ``border``.
+    public var toastBorderColor: UIColor?
+
+    /// The toast pill's border width.
+    public var toastBorderWidth: CGFloat
+
+    /// The toast pill's corner radius.
+    public var toastCornerRadius: CGFloat
+
+    /// Whether the toast draws its style's glyph before the message.
+    public var toastShowsGlyph: Bool
+
+    /// The toast message's size and weight.
+    public var toastFontSize: CGFloat
+    public var toastFontWeight: OverlayFontWeight
+
     /// Builds the filled button for a `ModalAlert`'s primary role. Nil draws a filled accent button.
     public var makePrimaryButton: (@MainActor (_ title: String, _ action: @escaping @MainActor () -> Void) -> UIButton)?
 
@@ -102,6 +124,14 @@ public struct OverlayTheme {
         toastScrimBlurStyle: UIBlurEffect.Style? = nil,
         toastScrimStatusBarStyle: UIStatusBarStyle = .lightContent,
         toastHaptics: Bool = false,
+        toastSurface: UIColor? = nil,
+        toastTextColor: UIColor? = nil,
+        toastBorderColor: UIColor? = nil,
+        toastBorderWidth: CGFloat = 0.5,
+        toastCornerRadius: CGFloat = 16,
+        toastShowsGlyph: Bool = true,
+        toastFontSize: CGFloat = 16,
+        toastFontWeight: OverlayFontWeight = .semibold,
         makePrimaryButton: (@MainActor (_ title: String, _ action: @escaping @MainActor () -> Void) -> UIButton)? = nil
     ) {
         self.accent = accent
@@ -131,6 +161,14 @@ public struct OverlayTheme {
         self.toastScrimBlurStyle = toastScrimBlurStyle
         self.toastScrimStatusBarStyle = toastScrimStatusBarStyle
         self.toastHaptics = toastHaptics
+        self.toastSurface = toastSurface
+        self.toastTextColor = toastTextColor
+        self.toastBorderColor = toastBorderColor
+        self.toastBorderWidth = toastBorderWidth
+        self.toastCornerRadius = toastCornerRadius
+        self.toastShowsGlyph = toastShowsGlyph
+        self.toastFontSize = toastFontSize
+        self.toastFontWeight = toastFontWeight
         self.makePrimaryButton = makePrimaryButton
     }
 
