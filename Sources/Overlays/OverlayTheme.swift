@@ -87,6 +87,16 @@ public struct OverlayTheme {
     /// Whether the toast draws its style's glyph before the message.
     public var toastShowsGlyph: Bool
 
+    /// The pill's margin from each screen edge.
+    public var toastHorizontalMargin: CGFloat
+
+    /// Whether the pill spans the width its margin leaves, instead of fitting its
+    /// message.
+    public var toastFillsWidth: Bool
+
+    /// The message's line height, as a multiple of its size.
+    public var toastLineHeightMultiple: CGFloat
+
     /// The toast message's size and weight.
     public var toastFontSize: CGFloat
     public var toastFontWeight: OverlayFontWeight
@@ -130,6 +140,9 @@ public struct OverlayTheme {
         toastBorderWidth: CGFloat = 0.5,
         toastCornerRadius: CGFloat = 16,
         toastShowsGlyph: Bool = true,
+        toastHorizontalMargin: CGFloat = 16,
+        toastFillsWidth: Bool = false,
+        toastLineHeightMultiple: CGFloat = 1,
         toastFontSize: CGFloat = 16,
         toastFontWeight: OverlayFontWeight = .semibold,
         makePrimaryButton: (@MainActor (_ title: String, _ action: @escaping @MainActor () -> Void) -> UIButton)? = nil
@@ -167,6 +180,9 @@ public struct OverlayTheme {
         self.toastBorderWidth = toastBorderWidth
         self.toastCornerRadius = toastCornerRadius
         self.toastShowsGlyph = toastShowsGlyph
+        self.toastHorizontalMargin = toastHorizontalMargin
+        self.toastFillsWidth = toastFillsWidth
+        self.toastLineHeightMultiple = toastLineHeightMultiple
         self.toastFontSize = toastFontSize
         self.toastFontWeight = toastFontWeight
         self.makePrimaryButton = makePrimaryButton

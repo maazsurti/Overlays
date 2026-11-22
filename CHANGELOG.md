@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.10
+
+- `toastHorizontalMargin` sets the pill's margin from each screen edge, replacing the fixed 16pt.
+- `toastFillsWidth` makes the pill span the width the margin leaves instead of fitting its message.
+  Default `false`.
+- `toastLineHeightMultiple` sets the message's line height as a multiple of its size. Default `1`.
+
 ## 1.3.9
 
 - The toast pill's chrome moves to `OverlayTheme`: `toastSurface`, `toastTextColor`,

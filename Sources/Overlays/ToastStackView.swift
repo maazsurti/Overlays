@@ -108,7 +108,6 @@ final class ToastStackView: UIView {
         }
     }
 
-    private static let horizontalPadding: CGFloat = 16
     /// How far each capsule behind the front one peeks out from under it.
     private static let depthPeek: CGFloat = 14
     /// How much smaller each capsule behind the front one is.
@@ -276,7 +275,7 @@ final class ToastStackView: UIView {
             return
         }
 
-        let maxWidth = bounds.width - 2 * Self.horizontalPadding
+        let maxWidth = bounds.width - 2 * OverlayTheme.current.toastHorizontalMargin
         var edgeY: CGFloat
         switch placement {
         case .top:

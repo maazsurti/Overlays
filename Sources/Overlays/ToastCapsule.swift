@@ -47,13 +47,21 @@ final class ToastCapsule: UIView {
         let theme = OverlayTheme.current
         self.id = toast.id
         self.onDismiss = onDismiss
-        self.messageLabel = UILabel(
-            text: toast.message,
-            font: theme.font(theme.toastFontWeight, theme.toastFontSize),
-            color: theme.toastTextColor ?? theme.text,
-            numberOfLines: 0
-        )
+        self.messageLabel = UILabel()
         super.init(frame: .zero)
+
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineHeightMultiple = theme.toastLineHeightMultiple
+        paragraph.alignment = theme.isRightToLeft() ? .right : .left
+        messageLabel.numberOfLines = 0
+        messageLabel.attributedText = NSAttributedString(
+            string: toast.message,
+            attributes: [
+                .font: theme.font(theme.toastFontWeight, theme.toastFontSize),
+                .foregroundColor: theme.toastTextColor ?? theme.text,
+                .paragraphStyle: paragraph,
+            ]
+        )
 
         backgroundColor = theme.toastSurface ?? theme.surface
         layer.cornerRadius = theme.toastCornerRadius
@@ -114,7 +122,9 @@ final class ToastCapsule: UIView {
         let text = messageLabel.sizeThatFits(
             CGSize(width: contentWidth, height: .greatestFiniteMagnitude)
         )
-        let width = min(maxWidth, Self.messageInset + ceil(text.width))
+        let width = OverlayTheme.current.toastFillsWidth
+            ? maxWidth
+            : min(maxWidth, Self.messageInset + ceil(text.width))
         let height = max(Self.minimumHeight, ceil(text.height) + 2 * Self.verticalMargin)
         return CGSize(width: ceil(width), height: ceil(height))
     }
