@@ -124,7 +124,7 @@ final class ToastCapsule: UIView {
             )
         } else {
             content = UIStackView.horizontal(
-                alignment: .center,
+                alignment: .fill,
                 views: [messageLabel]
             )
         }
